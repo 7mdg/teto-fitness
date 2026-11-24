@@ -11,6 +11,7 @@ const ORDER = { active: 0, inactive: 1, archived: 2 } as const;
 export function SettingsScreen() {
   const plans = useLive(() => db.plans.toArray(), []);
   const meta = useLive(() => db.meta.get('meta'), []);
+  const calendarLink = useLive(() => db.calendarLink.get('feed'), []);
   const sorted = [...(plans ?? [])].sort((a, b) => ORDER[a.status] - ORDER[b.status] || a.json.metadata.name.localeCompare(b.json.metadata.name));
 
   const settings = useLive(getSettings, []) ?? DEFAULT_SETTINGS;
@@ -76,6 +77,7 @@ export function SettingsScreen() {
 
       <Section title="You">
         <Card class="flush">
+          <Row title="Reminders" detail={calendarLink ? 'Calendar link active' : 'Add workouts to Apple Calendar'} chevron onClick={() => navigate({ name: 'reminders' })} />
           <Row title="Profile" detail="Height, starting weight, goal" chevron onClick={() => navigate({ name: 'profile' })} />
           {sorted.some((p) => p.status === 'active' && p.json.habits?.length) && (
             <Row title="Habits" detail="Turn on or off, adjust targets" chevron onClick={() => navigate({ name: 'habits' })} />

@@ -15,6 +15,7 @@ export type Route =
   | { name: 'data' }
   | { name: 'profile' }
   | { name: 'generator' }
+  | { name: 'reminders' }
   | { name: 'device-check' };
 
 export const TAB_ROUTES = ['home', 'progress', 'settings'] as const;

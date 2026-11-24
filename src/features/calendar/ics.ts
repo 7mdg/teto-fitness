@@ -25,7 +25,8 @@ export interface IcsEvent {
 
 export interface IcsCalendar {
   name: string;
-  timezone: 'Europe/Brussels';
+  /** Europe/Brussels gets a full VTIMEZONE; any other zone falls back to floating local times. */
+  timezone: string;
   events: IcsEvent[];
   /** Used for DTSTAMP; injectable for tests. */
   now?: Date;
@@ -110,6 +111,8 @@ function alarmTrigger(minutesBefore: number): string {
 
 export function buildIcs(cal: IcsCalendar): string {
   const stamp = formatUtc(cal.now ?? new Date());
+  const zoned = cal.timezone === 'Europe/Brussels';
+  const tzParam = zoned ? `;TZID=${cal.timezone}` : '';
   const lines: string[] = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
@@ -120,7 +123,7 @@ export function buildIcs(cal: IcsCalendar): string {
     `X-WR-TIMEZONE:${cal.timezone}`,
     'REFRESH-INTERVAL;VALUE=DURATION:PT1H',
     'X-PUBLISHED-TTL:PT1H',
-    ...VTIMEZONE_BRUSSELS,
+    ...(zoned ? VTIMEZONE_BRUSSELS : []),
   ];
 
   for (const ev of cal.events) {
@@ -128,7 +131,7 @@ export function buildIcs(cal: IcsCalendar): string {
     if (ev.startUtc) {
       lines.push(`DTSTART:${formatUtc(ev.startUtc)}`);
     } else if (ev.startLocal) {
-      lines.push(`DTSTART;TZID=${cal.timezone}:${formatLocal(ev.startLocal)}`);
+      lines.push(`DTSTART${tzParam}:${formatLocal(ev.startLocal)}`);
     } else {
       throw new Error(`Event ${ev.uid} has no start`);
     }
@@ -137,7 +140,7 @@ export function buildIcs(cal: IcsCalendar): string {
     if (ev.exdatesLocal?.length && ev.startLocal) {
       const time = ev.startLocal.slice(10); // "T20:00"
       const values = ev.exdatesLocal.map((d) => formatLocal(d + time)).join(',');
-      lines.push(`EXDATE;TZID=${cal.timezone}:${values}`);
+      lines.push(`EXDATE${tzParam}:${values}`);
     }
     lines.push(`SUMMARY:${escapeText(ev.title)}`);
     if (ev.description) lines.push(`DESCRIPTION:${escapeText(ev.description)}`);

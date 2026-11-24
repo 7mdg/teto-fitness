@@ -5,7 +5,7 @@ A personal training companion for iPhone, installed from Safari to the Home Scre
 - App: https://7mdg.github.io/teto-fitness/
 - Spec: [SPEC.md](SPEC.md)
 
-**Status:** phase 0. The app is currently a device-check screen that tests what the iPhone supports (install, offline, storage, wake lock, timer, file import/export, calendar).
+**Status:** all five build phases are done (v0.5). Import a plan (or make one with AI: Settings → Plan generator), train with one-tap set logging, track habits and measurements, back up to Files, and get workout reminders through a self-updating calendar. The plan format is documented in [docs/PLAN_FORMAT.md](docs/PLAN_FORMAT.md).
 
 ## Development
 ```

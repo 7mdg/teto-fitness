@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'preact/hooks';
+import { startCalendarSync } from '../features/calendar/sync';
 import { getActiveSession } from '../features/training/session';
 import { DeviceCheck } from '../spike/DeviceCheck';
 import { Home, useHasPlans } from '../screens/Home';
@@ -10,6 +11,7 @@ import { DataScreen } from '../screens/settings/DataScreen';
 import { HabitsSettings } from '../screens/settings/HabitsSettings';
 import { PlanGenerator } from '../screens/settings/PlanGenerator';
 import { ProfileScreen } from '../screens/settings/ProfileScreen';
+import { RemindersScreen } from '../screens/settings/RemindersScreen';
 import { MonthScreen } from '../screens/today/Month';
 import { SettingsScreen } from '../screens/settings/Settings';
 import { SummaryScreen } from '../screens/workout/Summary';
@@ -32,6 +34,9 @@ function readBrowserOk(): boolean {
 export function App() {
   const [browserOk, setBrowserOk] = useState(() => isStandalone() || readBrowserOk());
   const hasPlans = useHasPlans();
+
+  // Keep the subscribed calendar in step with the plan, schedule changes and reminder settings.
+  useEffect(() => startCalendarSync(), []);
 
   // Opening the app with a workout in progress goes straight back into it (SPEC §8.3).
   useEffect(() => {
@@ -99,6 +104,9 @@ export function App() {
       break;
     case 'generator':
       screen = <PlanGenerator />;
+      break;
+    case 'reminders':
+      screen = <RemindersScreen />;
       break;
     case 'device-check':
       screen = <DeviceCheck onBack={back} />;
