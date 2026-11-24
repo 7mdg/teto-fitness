@@ -29,7 +29,17 @@ export function columnLayout(ex: Exercise, separateSides: boolean): ColumnLayout
 }
 
 export function columnHeaders(layout: ColumnLayout, unit: WeightUnit, ex: Exercise): string[] {
-  const w = ex.weightMode === 'added' ? `+${unit}` : ex.weightMode === 'assisted' ? `assist ${unit}` : unit;
+  // The weight convention lives in the column header instead of an extra line of text.
+  const w =
+    ex.weightMode === 'added'
+      ? `+${unit}`
+      : ex.weightMode === 'assisted'
+        ? `assist ${unit}`
+        : ex.weightMode === 'per_dumbbell'
+          ? `${unit} each`
+          : ex.weightMode === 'per_side'
+            ? `${unit} / side`
+            : unit;
   switch (layout) {
     case 'weight-reps':
       return [w, 'reps'];

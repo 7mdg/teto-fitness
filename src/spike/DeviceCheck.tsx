@@ -298,8 +298,7 @@ export function DeviceCheck({ onBack }: { onBack: () => void }) {
         const safeTop = probe.getBoundingClientRect().height - parseFloat(getComputedStyle(probe).paddingBottom);
         const safeBottom = parseFloat(getComputedStyle(probe).paddingBottom);
         probe.remove();
-        const vpGap = getComputedStyle(document.documentElement).getPropertyValue('--vp-gap').trim();
-        return `viewport ${window.innerWidth}x${v.innerHeight} · screen ${v.screenHeight} · gap ${v.gap} · vp-gap ${vpGap} · safe ${safeTop}/${safeBottom}`;
+        return `viewport ${window.innerWidth}x${v.innerHeight} · screen ${v.screenHeight} · gap ${v.gap} · safe ${safeTop}/${safeBottom}`;
       })(),
       ...Object.entries(r).map(([k, v]) => `${v.status.toUpperCase().padEnd(4)} ${k}: ${v.detail}`),
     ];

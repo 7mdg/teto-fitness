@@ -23,9 +23,8 @@
 
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
-  /* iOS 26 Home Screen apps can end the layout viewport above the screen bottom; measured in main.tsx. */
-  --vp-gap: 0px;
-  --bottom-pad: max(6px, calc(var(--safe-bottom) - var(--vp-gap)));
+  /* Static on purpose: a runtime-measured value moved bottom bars whenever the viewport resized (keyboard). */
+  --bottom-pad: max(16px, calc(var(--safe-bottom) - 2px));
 }
 
 *, *::before, *::after { box-sizing: border-box; }

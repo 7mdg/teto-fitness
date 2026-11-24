@@ -6,9 +6,8 @@ import { currentExercise, exerciseForSet, lastPerformance, logSet, setSlotSkippe
 import type { SlotPrescription } from '../../features/training/types';
 import { formatWeight, type WeightUnit } from '../../features/training/units';
 import { Tag } from '../../ui/components';
-import { formatClock } from '../../ui/hooks';
 import { Icon } from '../../ui/icons';
-import { columnHeaders, columnLayout, SetRow, weightModeHint, type SetValues } from './SetRow';
+import { columnHeaders, columnLayout, SetRow, type SetValues } from './SetRow';
 
 const stripUndefined = <T extends object>(o: T): Partial<T> => Object.fromEntries(Object.entries(o).filter(([, v]) => v !== undefined)) as Partial<T>;
 
@@ -95,17 +94,16 @@ export function SlotCard(p: Props) {
 
       {p.expanded && !skipped && (
         <div class="slot-body">
-          <div class="slot-meta">
-            {swappedFrom && <Tag tone="acc">for {swappedFrom}</Tag>}
-            {prefill.progressedByKg && (
-              <Tag tone="lime">
-                ↑ {fmt(prefill.progressedByKg)} {p.unit}
-              </Tag>
-            )}
-            <span class="muted small">
-              {[weightModeHint(ex, p.unit), p.slot.restSeconds ? `rest ${formatClock(p.slot.restSeconds)}` : ''].filter(Boolean).join(' · ')}
-            </span>
-          </div>
+          {(swappedFrom || prefill.progressedByKg) && (
+            <div class="slot-meta">
+              {swappedFrom && <Tag tone="acc">for {swappedFrom}</Tag>}
+              {prefill.progressedByKg && (
+                <Tag tone="lime">
+                  ↑ {fmt(prefill.progressedByKg)} {p.unit}
+                </Tag>
+              )}
+            </div>
+          )}
           {lastLine && <p class="small muted">Last session: <span class="num">{lastLine}</span></p>}
           {previous && !previous.length && ex.tracking === 'strength' && <p class="small muted">First session: enter the weight you use.</p>}
           {p.slot.notes && <p class="small">{p.slot.notes}</p>}

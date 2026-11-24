@@ -11,6 +11,10 @@ export type Route =
   | { name: 'session'; id: string }
   | { name: 'exercise'; id: string }
   | { name: 'habits' }
+  | { name: 'month' }
+  | { name: 'data' }
+  | { name: 'profile' }
+  | { name: 'generator' }
   | { name: 'device-check' };
 
 export const TAB_ROUTES = ['home', 'progress', 'settings'] as const;

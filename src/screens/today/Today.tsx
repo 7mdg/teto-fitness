@@ -10,6 +10,7 @@ import { startSession } from '../../features/training/session';
 import { Button, Card, Dialog, Row, Section, Tag, TopBar } from '../../ui/components';
 import { formatClock, unlockAudio, useNow } from '../../ui/hooks';
 import { Icon } from '../../ui/icons';
+import { exportBackup } from '../settings/DataScreen';
 import { DaySheet } from './DaySheet';
 import { HabitsSection } from './Habits';
 
@@ -111,6 +112,8 @@ export function Today({ record }: { record: PlanRecord }) {
 
       <HabitsSection record={record} today={today} weekStart={weekStart} />
 
+      <BackupNudge />
+
       <DaySheet record={record} date={day} week={week} overrides={overrides} doneKeys={doneKeys} onClose={() => setDay(null)} />
 
       {!active && (
@@ -146,6 +149,29 @@ export function Today({ record }: { record: PlanRecord }) {
         {pos.status === 'before' && <p class="small">Before the start date this counts as a practice session; its sets still prefill your first real one.</p>}
       </Dialog>
     </main>
+  );
+}
+
+/** One line, only when overdue: 14+ days or 10+ workouts since the last backup (SPEC §8.2). */
+function BackupNudge() {
+  const meta = useLive(() => db.meta.get('meta'), []);
+  const since = useLive(async () => {
+    const m = await db.meta.get('meta');
+    return db.sessions.where('startedAt').above(m?.lastBackupAt ?? '').filter((s) => s.status === 'completed').count();
+  }, [meta?.lastBackupAt]);
+  if (meta === undefined || since === undefined || since === 0) return null;
+  const days = meta?.lastBackupAt ? (Date.now() - Date.parse(meta.lastBackupAt)) / 86_400_000 : Infinity;
+  if (days < 14 && since < 10) return null;
+  return (
+    <button type="button" class="nudge" onClick={() => void exportBackup()}>
+      <Icon name="share" size={18} />
+      <span class="row-main">
+        <span>Save a backup</span>
+        <span class="row-detail">
+          {meta?.lastBackupAt ? `${since} workouts since the last one` : 'Your data only lives on this phone'}
+        </span>
+      </span>
+    </button>
   );
 }
 
@@ -193,7 +219,14 @@ function ResumeCard({ session }: { session: SessionRecord }) {
 function WeekStrip(props: { start: string; today: string; state: (d: string) => DayState; onPick: (d: string) => void }) {
   const days = Array.from({ length: 7 }, (_, i) => addDays(props.start, i));
   return (
-    <Section title="This week">
+    <Section
+      title="This week"
+      action={
+        <button type="button" class="link-btn" onClick={() => navigate({ name: 'month' })}>
+          <Icon name="calendar" size={16} /> Month
+        </button>
+      }
+    >
       <div class="week">
         {days.map((d) => {
           const st = props.state(d);

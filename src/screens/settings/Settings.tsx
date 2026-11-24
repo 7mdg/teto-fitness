@@ -70,16 +70,24 @@ export function SettingsScreen() {
             />
           ))}
           <Row title="Import plan" detail="From Files or iCloud Drive" chevron onClick={() => void chooseFileAndPreview()} />
+          <Row title="Plan generator" detail="Make or change a plan with ChatGPT or Claude" chevron onClick={() => navigate({ name: 'generator' })} />
         </Card>
       </Section>
 
-      {sorted.some((p) => p.status === 'active' && p.json.habits?.length) && (
-        <Section title="Routine">
-          <Card class="flush">
+      <Section title="You">
+        <Card class="flush">
+          <Row title="Profile" detail="Height, starting weight, goal" chevron onClick={() => navigate({ name: 'profile' })} />
+          {sorted.some((p) => p.status === 'active' && p.json.habits?.length) && (
             <Row title="Habits" detail="Turn on or off, adjust targets" chevron onClick={() => navigate({ name: 'habits' })} />
-          </Card>
-        </Section>
-      )}
+          )}
+          <Row
+            title="Backup & export"
+            detail={meta?.lastBackupAt ? `Last backup ${new Date(meta.lastBackupAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}` : 'No backup yet'}
+            chevron
+            onClick={() => navigate({ name: 'data' })}
+          />
+        </Card>
+      </Section>
 
       <Section title="Example plans">
         <Card class="flush">
@@ -93,15 +101,6 @@ export function SettingsScreen() {
         <Card class="flush">
           <Row title="Version" trailing={<span class="num">{__APP_VERSION__}</span>} />
           <Row title="Plan format" trailing={<span class="num">{SCHEMA_VERSION}</span>} />
-          <Row
-            title="Persistent storage"
-            detail={
-              meta?.persistGranted
-                ? 'iOS will not clear data on its own. Deleting the app still removes it.'
-                : 'iOS may clear data when storage runs low. Keep a backup.'
-            }
-            trailing={meta?.persistGranted ? <Tag tone="lime">granted</Tag> : <Tag>not granted</Tag>}
-          />
           <Row title="Device check" detail="Test what this iPhone supports" chevron onClick={() => navigate({ name: 'device-check' })} />
         </Card>
       </Section>

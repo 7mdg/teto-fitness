@@ -6,7 +6,11 @@ import { InstallScreen } from '../screens/onboarding/Install';
 import { ImportPreview } from '../screens/plans/ImportPreview';
 import { PlanDetail } from '../screens/plans/PlanDetail';
 import { ExerciseHistory, ProgressScreen, SessionDetail } from '../screens/progress/Progress';
+import { DataScreen } from '../screens/settings/DataScreen';
 import { HabitsSettings } from '../screens/settings/HabitsSettings';
+import { PlanGenerator } from '../screens/settings/PlanGenerator';
+import { ProfileScreen } from '../screens/settings/ProfileScreen';
+import { MonthScreen } from '../screens/today/Month';
 import { SettingsScreen } from '../screens/settings/Settings';
 import { SummaryScreen } from '../screens/workout/Summary';
 import { WorkoutScreen } from '../screens/workout/Workout';
@@ -83,6 +87,18 @@ export function App() {
       break;
     case 'habits':
       screen = <HabitsSettings />;
+      break;
+    case 'month':
+      screen = <MonthScreen />;
+      break;
+    case 'data':
+      screen = <DataScreen />;
+      break;
+    case 'profile':
+      screen = <ProfileScreen />;
+      break;
+    case 'generator':
+      screen = <PlanGenerator />;
       break;
     case 'device-check':
       screen = <DeviceCheck onBack={back} />;

@@ -23,6 +23,21 @@ export function pickTextFile(accept = '.json,application/json'): Promise<{ name:
   });
 }
 
+/** Shares several files in one Share sheet when supported; otherwise downloads them one by one. */
+export async function shareFiles(files: { name: string; type: string; text: string }[]): Promise<'shared' | 'cancelled' | 'downloaded'> {
+  const list = files.map((f) => new File([f.text], f.name, { type: f.type }));
+  if (navigator.canShare?.({ files: list })) {
+    try {
+      await navigator.share({ files: list });
+      return 'shared';
+    } catch {
+      return 'cancelled';
+    }
+  }
+  for (const f of files) await shareFile(f.name, f.type, f.text);
+  return 'downloaded';
+}
+
 /** Shares a file via the iOS Share sheet, falling back to a download. */
 export async function shareFile(name: string, type: string, text: string): Promise<'shared' | 'cancelled' | 'downloaded'> {
   const file = new File([text], name, { type });

@@ -7,7 +7,4 @@ import '@fontsource/jetbrains-mono/latin-500.css';
 import './ui/tokens.css';
 import './ui/app.css';
 import { App } from './app/App';
-import { measureViewportGap } from './ui/viewport';
-
-measureViewportGap();
 render(<App />, document.getElementById('app')!);
