@@ -1,7 +1,9 @@
 // IndexedDB schema (Dexie). See SPEC.md §5. Three layers: programme configuration, personal records, preferences.
 // Migration rule: a new version only ever adds; it never drops data.
 import Dexie, { type EntityTable } from 'dexie';
-import type { Plan, Weekday } from '../features/plans/types';
+import type { Exercise, Plan, Weekday } from '../features/plans/types';
+import type { PersonalRecord } from '../features/training/progression';
+import type { Prescription, Substitution } from '../features/training/types';
 
 // ---------- programme configuration ----------
 export type PlanStatus = 'active' | 'inactive' | 'archived';
@@ -34,8 +36,13 @@ export interface SessionRecord {
   endedAt?: string;
   status: 'active' | 'completed' | 'discarded';
   note?: string;
-  prescription: unknown;
-  substitutions: { slot: number; plannedExerciseId: string; performedExerciseId: string; fromSetIndex: number }[];
+  prescription: Prescription;
+  substitutions: Substitution[];
+  skippedSlots?: number[];
+  /** Rest timer end as epoch ms (survives reloads). */
+  restEndsAt?: number;
+  restTotalSec?: number;
+  records?: PersonalRecord[];
 }
 export interface SetRecord {
   id: string;
@@ -53,14 +60,7 @@ export interface SetRecord {
   completed: boolean;
   loggedAt: string;
 }
-export interface CustomExerciseRecord {
-  id: string;
-  name: string;
-  tracking: string;
-  equipment?: string;
-  weightMode?: string;
-  weightIncrementKg?: number;
-  unilateral?: boolean;
+export interface CustomExerciseRecord extends Exercise {
   createdAt: string;
 }
 export interface MeasurementRecord {

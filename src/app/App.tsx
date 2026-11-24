@@ -1,12 +1,17 @@
-import { useState } from 'preact/hooks';
+import { useEffect, useState } from 'preact/hooks';
+import { getActiveSession } from '../features/training/session';
 import { DeviceCheck } from '../spike/DeviceCheck';
-import { Home } from '../screens/Home';
+import { Home, useHasPlans } from '../screens/Home';
 import { InstallScreen } from '../screens/onboarding/Install';
 import { ImportPreview } from '../screens/plans/ImportPreview';
 import { PlanDetail } from '../screens/plans/PlanDetail';
+import { ExerciseHistory, ProgressScreen, SessionDetail } from '../screens/progress/Progress';
 import { SettingsScreen } from '../screens/settings/Settings';
+import { SummaryScreen } from '../screens/workout/Summary';
+import { WorkoutScreen } from '../screens/workout/Workout';
 import { Toast } from '../ui/components';
-import { back, route, toast } from './router';
+import { back, navigate, route, TAB_ROUTES, toast } from './router';
+import { TabBar } from './TabBar';
 import { UpdateBanner } from './UpdateBanner';
 
 export const isStandalone = () => window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
@@ -21,6 +26,14 @@ function readBrowserOk(): boolean {
 
 export function App() {
   const [browserOk, setBrowserOk] = useState(() => isStandalone() || readBrowserOk());
+  const hasPlans = useHasPlans();
+
+  // Opening the app with a workout in progress goes straight back into it (SPEC §8.3).
+  useEffect(() => {
+    void getActiveSession().then((s) => {
+      if (s && route.value.name === 'home') navigate({ name: 'workout', sessionId: s.id });
+    });
+  }, []);
 
   if (!browserOk) {
     return (
@@ -43,6 +56,9 @@ export function App() {
     case 'home':
       screen = <Home />;
       break;
+    case 'progress':
+      screen = <ProgressScreen />;
+      break;
     case 'settings':
       screen = <SettingsScreen />;
       break;
@@ -52,15 +68,30 @@ export function App() {
     case 'plan':
       screen = <PlanDetail id={r.id} />;
       break;
+    case 'workout':
+      screen = <WorkoutScreen sessionId={r.sessionId} />;
+      break;
+    case 'summary':
+      screen = <SummaryScreen sessionId={r.sessionId} />;
+      break;
+    case 'session':
+      screen = <SessionDetail id={r.id} />;
+      break;
+    case 'exercise':
+      screen = <ExerciseHistory id={r.id} />;
+      break;
     case 'device-check':
       screen = <DeviceCheck onBack={back} />;
       break;
   }
 
+  const showTabs = hasPlans && (TAB_ROUTES as readonly string[]).includes(r.name);
+
   return (
     <>
-      <UpdateBanner />
+      {r.name !== 'workout' && <UpdateBanner />}
       {screen}
+      {showTabs && <TabBar />}
       <Toast message={toast.value} />
     </>
   );

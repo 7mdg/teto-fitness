@@ -2,10 +2,17 @@ import { signal } from '@preact/signals';
 
 export type Route =
   | { name: 'home' }
+  | { name: 'progress' }
   | { name: 'settings' }
   | { name: 'import'; text: string; source: string }
   | { name: 'plan'; id: string }
+  | { name: 'workout'; sessionId: string }
+  | { name: 'summary'; sessionId: string }
+  | { name: 'session'; id: string }
+  | { name: 'exercise'; id: string }
   | { name: 'device-check' };
+
+export const TAB_ROUTES = ['home', 'progress', 'settings'] as const;
 
 const stack = signal<Route[]>([{ name: 'home' }]);
 export const route = signal<Route>({ name: 'home' });

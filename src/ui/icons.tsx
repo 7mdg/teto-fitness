@@ -13,6 +13,18 @@ const paths = {
   calendar: 'M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z',
   more: 'M5 12h.01M12 12h.01M19 12h.01',
   phone: 'M7 2h10a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zM11 18h2',
+  today: 'M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zM12 14h.01',
+  chart: 'M4 20V10M10 20V4M16 20v-7M22 20H2',
+  plus: 'M12 5v14M5 12h14',
+  minus: 'M5 12h14',
+  swap: 'M7 16V4M3 8l4-4 4 4M17 8v12M21 16l-4 4-4-4',
+  skip: 'M5 4l10 8-10 8zM19 5v14',
+  play: 'M7 4l13 8-13 8z',
+  x: 'M6 6l12 12M18 6L6 18',
+  search: 'M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14zM21 21l-4.3-4.3',
+  sides: 'M8 4v16M16 4v16M3 12h5M16 12h5',
+  undo: 'M9 14L4 9l5-5M4 9h11a5 5 0 0 1 0 10h-1',
+  trophy: 'M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0zM17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3',
 } as const;
 
 export type IconName = keyof typeof paths;

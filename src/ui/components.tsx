@@ -80,6 +80,25 @@ export function Row(props: {
   );
 }
 
+/** iOS-style switch (native `switch` checkbox on Safari 17.4+, which also gives haptic feedback). */
+export function Toggle(props: { label: string; detail?: string; checked: boolean; onChange: (v: boolean) => void }) {
+  return (
+    <label class="row toggle-row">
+      <span class="row-main">
+        <span class="row-title">{props.label}</span>
+        {props.detail && <span class="row-detail">{props.detail}</span>}
+      </span>
+      <input
+        type="checkbox"
+        {...{ switch: true }}
+        class="switch"
+        checked={props.checked}
+        onChange={(e) => props.onChange((e.target as HTMLInputElement).checked)}
+      />
+    </label>
+  );
+}
+
 export function Tag(props: { children: ComponentChildren; tone?: 'acc' | 'lime' | 'mut' | 'danger' }) {
   return <span class={`tag ${props.tone ?? 'mut'}`}>{props.children}</span>;
 }
