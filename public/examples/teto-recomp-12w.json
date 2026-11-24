@@ -1,0 +1,147 @@
+{
+  "$schema": "https://7mdg.github.io/teto-fitness/schemas/teto-plan.v1.schema.json",
+  "format": "teto-plan",
+  "schemaVersion": "1.0.0",
+  "metadata": {
+    "id": "teto-recomp-12w",
+    "revision": 1,
+    "name": "12 Week Body Recomposition",
+    "author": "TETO",
+    "description": "Upper/lower split, 4 days a week. Weeks 1–3 at 2 working sets, full volume from week 4. Double progression.",
+    "createdAt": "2026-11-24"
+  },
+  "goals": { "primary": "body_recomposition", "priorities": ["Chest", "Biceps thickness", "Shoulder width", "Back width"] },
+  "programme": {
+    "durationWeeks": 12,
+    "startDate": "2026-11-30",
+    "onCompletion": "continue",
+    "phases": [
+      { "id": "intro", "name": "Introduction", "startWeek": 1, "endWeek": 3, "workingSetsCap": 2, "targetRir": 3, "notes": "Learn the movements and find working weights." },
+      { "id": "progression", "name": "Progression", "startWeek": 4, "endWeek": 12, "targetRir": 2 }
+    ]
+  },
+  "exercises": [
+    { "id": "incline-dumbbell-press", "name": "Incline dumbbell press", "tracking": "strength", "equipment": "dumbbell", "category": "compound", "muscleGroups": ["chest", "triceps", "shoulders"], "weightMode": "per_dumbbell", "defaultRestSeconds": 120, "weightIncrementKg": 2, "alternatives": ["incline-chest-press", "incline-smith-press"] },
+    { "id": "machine-chest-press", "name": "Machine chest press", "tracking": "strength", "equipment": "machine", "category": "compound", "muscleGroups": ["chest", "triceps", "shoulders"], "weightMode": "total", "defaultRestSeconds": 120, "weightIncrementKg": 5, "alternatives": ["dumbbell-bench-press", "smith-bench-press"] },
+    { "id": "lat-pulldown", "name": "Lat pulldown", "tracking": "strength", "equipment": "cable", "category": "compound", "muscleGroups": ["back", "biceps"], "weightMode": "total", "defaultRestSeconds": 120, "weightIncrementKg": 2.5, "alternatives": ["machine-pulldown", "assisted-pull-up"] },
+    { "id": "cable-lateral-raise", "name": "Cable lateral raises", "tracking": "strength", "equipment": "cable", "category": "isolation", "muscleGroups": ["shoulders"], "weightMode": "per_side", "unilateral": true, "sideLogging": "combined", "defaultRestSeconds": 90, "weightIncrementKg": 1.25, "alternatives": ["dumbbell-lateral-raise", "machine-lateral-raise"] },
+    { "id": "hammer-curl", "name": "Hammer curls", "tracking": "strength", "equipment": "dumbbell", "category": "isolation", "muscleGroups": ["biceps", "brachialis", "forearms"], "weightMode": "per_dumbbell", "defaultRestSeconds": 90, "weightIncrementKg": 1, "alternatives": ["cable-rope-hammer-curl"] },
+    { "id": "triceps-pushdown", "name": "Triceps pushdown", "tracking": "strength", "equipment": "cable", "category": "isolation", "muscleGroups": ["triceps"], "weightMode": "total", "defaultRestSeconds": 90, "weightIncrementKg": 2.5, "alternatives": ["overhead-triceps-extension", "machine-dip"] },
+    { "id": "leg-press", "name": "Leg press", "tracking": "strength", "equipment": "machine", "category": "compound", "muscleGroups": ["quads", "glutes"], "weightMode": "total", "defaultRestSeconds": 120, "weightIncrementKg": 5, "alternatives": ["hack-squat", "smith-squat"] },
+    { "id": "romanian-deadlift", "name": "Romanian deadlift", "tracking": "strength", "equipment": "barbell", "category": "compound", "muscleGroups": ["hamstrings", "glutes", "lower-back"], "weightMode": "total", "defaultRestSeconds": 120, "weightIncrementKg": 5, "notes": "Weight includes the bar.", "alternatives": ["dumbbell-romanian-deadlift"] },
+    { "id": "leg-extension", "name": "Leg extension", "tracking": "strength", "equipment": "machine", "category": "isolation", "muscleGroups": ["quads"], "weightMode": "total", "defaultRestSeconds": 90, "weightIncrementKg": 2.5, "alternatives": ["single-leg-extension"] },
+    { "id": "seated-leg-curl", "name": "Seated leg curl", "tracking": "strength", "equipment": "machine", "category": "isolation", "muscleGroups": ["hamstrings"], "weightMode": "total", "defaultRestSeconds": 90, "weightIncrementKg": 2.5, "alternatives": ["lying-leg-curl"] },
+    { "id": "calf-raise-leg-press", "name": "Calf raises (leg press)", "tracking": "strength", "equipment": "machine", "category": "isolation", "muscleGroups": ["calves"], "weightMode": "total", "defaultRestSeconds": 90, "weightIncrementKg": 5, "alternatives": ["standing-calf-raise", "seated-calf-raise"] },
+    { "id": "chest-supported-row", "name": "Chest-supported row", "tracking": "strength", "equipment": "machine", "category": "compound", "muscleGroups": ["back", "rear-delts", "biceps"], "weightMode": "total", "defaultRestSeconds": 120, "weightIncrementKg": 5, "alternatives": ["seated-cable-row", "dumbbell-row"] },
+    { "id": "incline-chest-press", "name": "Incline chest press", "tracking": "strength", "equipment": "machine", "category": "compound", "muscleGroups": ["chest", "triceps", "shoulders"], "weightMode": "total", "defaultRestSeconds": 120, "weightIncrementKg": 5, "alternatives": ["incline-dumbbell-press", "incline-smith-press"] },
+    { "id": "pec-deck", "name": "Pec deck", "tracking": "strength", "equipment": "machine", "category": "isolation", "muscleGroups": ["chest"], "weightMode": "total", "defaultRestSeconds": 90, "weightIncrementKg": 2.5, "alternatives": ["cable-fly"] },
+    { "id": "dumbbell-lateral-raise", "name": "Lateral raises", "tracking": "strength", "equipment": "dumbbell", "category": "isolation", "muscleGroups": ["shoulders"], "weightMode": "per_dumbbell", "defaultRestSeconds": 90, "weightIncrementKg": 1, "alternatives": ["cable-lateral-raise", "machine-lateral-raise"] },
+    { "id": "preacher-curl", "name": "Preacher curls", "tracking": "strength", "equipment": "machine", "category": "isolation", "muscleGroups": ["biceps"], "weightMode": "total", "defaultRestSeconds": 90, "weightIncrementKg": 2.5, "alternatives": ["ez-bar-preacher-curl", "cable-curl"] },
+    { "id": "overhead-triceps-extension", "name": "Overhead triceps extension", "tracking": "strength", "equipment": "cable", "category": "isolation", "muscleGroups": ["triceps"], "weightMode": "total", "defaultRestSeconds": 90, "weightIncrementKg": 2.5, "alternatives": ["triceps-pushdown", "dumbbell-overhead-extension"] },
+    { "id": "cable-crunch", "name": "Cable crunch", "tracking": "strength", "equipment": "cable", "category": "isolation", "muscleGroups": ["abs"], "weightMode": "total", "defaultRestSeconds": 90, "weightIncrementKg": 2.5, "alternatives": ["machine-crunch"] },
+
+    { "id": "incline-smith-press", "name": "Incline Smith press", "tracking": "strength", "equipment": "smith", "category": "compound", "muscleGroups": ["chest", "triceps", "shoulders"], "weightMode": "total", "defaultRestSeconds": 120, "weightIncrementKg": 5 },
+    { "id": "dumbbell-bench-press", "name": "Dumbbell bench press", "tracking": "strength", "equipment": "dumbbell", "category": "compound", "muscleGroups": ["chest", "triceps", "shoulders"], "weightMode": "per_dumbbell", "defaultRestSeconds": 120, "weightIncrementKg": 2 },
+    { "id": "smith-bench-press", "name": "Smith bench press", "tracking": "strength", "equipment": "smith", "category": "compound", "muscleGroups": ["chest", "triceps", "shoulders"], "weightMode": "total", "defaultRestSeconds": 120, "weightIncrementKg": 5 },
+    { "id": "machine-pulldown", "name": "Machine pulldown", "tracking": "strength", "equipment": "machine", "category": "compound", "muscleGroups": ["back", "biceps"], "weightMode": "total", "defaultRestSeconds": 120, "weightIncrementKg": 5 },
+    { "id": "assisted-pull-up", "name": "Assisted pull-up", "tracking": "bodyweight", "equipment": "machine", "category": "compound", "muscleGroups": ["back", "biceps"], "weightMode": "assisted", "defaultRestSeconds": 120, "weightIncrementKg": 5 },
+    { "id": "machine-lateral-raise", "name": "Machine lateral raise", "tracking": "strength", "equipment": "machine", "category": "isolation", "muscleGroups": ["shoulders"], "weightMode": "total", "defaultRestSeconds": 90, "weightIncrementKg": 2.5 },
+    { "id": "cable-rope-hammer-curl", "name": "Cable rope hammer curl", "tracking": "strength", "equipment": "cable", "category": "isolation", "muscleGroups": ["biceps", "brachialis", "forearms"], "weightMode": "total", "defaultRestSeconds": 90, "weightIncrementKg": 2.5 },
+    { "id": "machine-dip", "name": "Machine dip", "tracking": "strength", "equipment": "machine", "category": "compound", "muscleGroups": ["triceps", "chest"], "weightMode": "total", "defaultRestSeconds": 90, "weightIncrementKg": 5 },
+    { "id": "hack-squat", "name": "Hack squat", "tracking": "strength", "equipment": "machine", "category": "compound", "muscleGroups": ["quads", "glutes"], "weightMode": "total", "defaultRestSeconds": 120, "weightIncrementKg": 5 },
+    { "id": "smith-squat", "name": "Smith squat", "tracking": "strength", "equipment": "smith", "category": "compound", "muscleGroups": ["quads", "glutes"], "weightMode": "total", "defaultRestSeconds": 120, "weightIncrementKg": 5 },
+    { "id": "dumbbell-romanian-deadlift", "name": "Dumbbell Romanian deadlift", "tracking": "strength", "equipment": "dumbbell", "category": "compound", "muscleGroups": ["hamstrings", "glutes", "lower-back"], "weightMode": "per_dumbbell", "defaultRestSeconds": 120, "weightIncrementKg": 2 },
+    { "id": "single-leg-extension", "name": "Single-leg extension", "tracking": "strength", "equipment": "machine", "category": "isolation", "muscleGroups": ["quads"], "weightMode": "per_side", "unilateral": true, "defaultRestSeconds": 90, "weightIncrementKg": 2.5 },
+    { "id": "lying-leg-curl", "name": "Lying leg curl", "tracking": "strength", "equipment": "machine", "category": "isolation", "muscleGroups": ["hamstrings"], "weightMode": "total", "defaultRestSeconds": 90, "weightIncrementKg": 2.5 },
+    { "id": "standing-calf-raise", "name": "Standing calf raise", "tracking": "strength", "equipment": "machine", "category": "isolation", "muscleGroups": ["calves"], "weightMode": "total", "defaultRestSeconds": 90, "weightIncrementKg": 5 },
+    { "id": "seated-calf-raise", "name": "Seated calf raise", "tracking": "strength", "equipment": "machine", "category": "isolation", "muscleGroups": ["calves"], "weightMode": "total", "defaultRestSeconds": 90, "weightIncrementKg": 5 },
+    { "id": "seated-cable-row", "name": "Seated cable row", "tracking": "strength", "equipment": "cable", "category": "compound", "muscleGroups": ["back", "rear-delts", "biceps"], "weightMode": "total", "defaultRestSeconds": 120, "weightIncrementKg": 2.5 },
+    { "id": "dumbbell-row", "name": "One-arm dumbbell row", "tracking": "strength", "equipment": "dumbbell", "category": "compound", "muscleGroups": ["back", "rear-delts", "biceps"], "weightMode": "per_dumbbell", "unilateral": true, "defaultRestSeconds": 120, "weightIncrementKg": 2 },
+    { "id": "cable-fly", "name": "Cable fly", "tracking": "strength", "equipment": "cable", "category": "isolation", "muscleGroups": ["chest"], "weightMode": "per_side", "defaultRestSeconds": 90, "weightIncrementKg": 1.25 },
+    { "id": "ez-bar-preacher-curl", "name": "EZ-bar preacher curl", "tracking": "strength", "equipment": "barbell", "category": "isolation", "muscleGroups": ["biceps"], "weightMode": "total", "defaultRestSeconds": 90, "weightIncrementKg": 2.5 },
+    { "id": "cable-curl", "name": "Cable curl", "tracking": "strength", "equipment": "cable", "category": "isolation", "muscleGroups": ["biceps"], "weightMode": "total", "defaultRestSeconds": 90, "weightIncrementKg": 2.5 },
+    { "id": "dumbbell-overhead-extension", "name": "Dumbbell overhead extension", "tracking": "strength", "equipment": "dumbbell", "category": "isolation", "muscleGroups": ["triceps"], "weightMode": "per_dumbbell", "defaultRestSeconds": 90, "weightIncrementKg": 2 },
+    { "id": "machine-crunch", "name": "Machine crunch", "tracking": "strength", "equipment": "machine", "category": "isolation", "muscleGroups": ["abs"], "weightMode": "total", "defaultRestSeconds": 90, "weightIncrementKg": 5 }
+  ],
+  "workouts": [
+    {
+      "id": "upper-a",
+      "name": "Upper A",
+      "focus": "Chest emphasis",
+      "estimatedDurationMinutes": { "min": 50, "max": 60 },
+      "exercises": [
+        { "exerciseId": "incline-dumbbell-press", "sets": 3, "repsMin": 8, "repsMax": 12 },
+        { "exerciseId": "machine-chest-press", "sets": 3, "repsMin": 8, "repsMax": 12 },
+        { "exerciseId": "lat-pulldown", "sets": 3, "repsMin": 8, "repsMax": 12 },
+        { "exerciseId": "cable-lateral-raise", "sets": 3, "repsMin": 12, "repsMax": 20 },
+        { "exerciseId": "hammer-curl", "sets": 3, "repsMin": 10, "repsMax": 15 },
+        { "exerciseId": "triceps-pushdown", "sets": 2, "repsMin": 10, "repsMax": 15 }
+      ]
+    },
+    {
+      "id": "lower-a",
+      "name": "Lower A",
+      "estimatedDurationMinutes": { "min": 35, "max": 45 },
+      "exercises": [
+        { "exerciseId": "leg-press", "sets": 3, "repsMin": 8, "repsMax": 12 },
+        { "exerciseId": "romanian-deadlift", "sets": 3, "repsMin": 8, "repsMax": 12 },
+        { "exerciseId": "leg-extension", "sets": 2, "repsMin": 10, "repsMax": 15 },
+        { "exerciseId": "seated-leg-curl", "sets": 2, "repsMin": 10, "repsMax": 15 },
+        { "exerciseId": "calf-raise-leg-press", "sets": 2, "repsMin": 12, "repsMax": 20 }
+      ]
+    },
+    {
+      "id": "upper-b",
+      "name": "Upper B",
+      "focus": "Back and arms",
+      "estimatedDurationMinutes": { "min": 50, "max": 60 },
+      "exercises": [
+        { "exerciseId": "chest-supported-row", "sets": 3, "repsMin": 8, "repsMax": 12 },
+        { "exerciseId": "lat-pulldown", "sets": 3, "repsMin": 8, "repsMax": 12 },
+        { "exerciseId": "incline-chest-press", "sets": 3, "repsMin": 8, "repsMax": 12 },
+        { "exerciseId": "pec-deck", "sets": 2, "repsMin": 10, "repsMax": 15 },
+        { "exerciseId": "dumbbell-lateral-raise", "sets": 3, "repsMin": 12, "repsMax": 20 },
+        { "exerciseId": "preacher-curl", "sets": 3, "repsMin": 10, "repsMax": 15 },
+        { "exerciseId": "overhead-triceps-extension", "sets": 2, "repsMin": 10, "repsMax": 15 }
+      ]
+    },
+    {
+      "id": "lower-b",
+      "name": "Lower B",
+      "focus": "Legs and upper-body accessories",
+      "estimatedDurationMinutes": { "min": 40, "max": 50 },
+      "exercises": [
+        { "exerciseId": "leg-press", "sets": 3, "repsMin": 10, "repsMax": 15 },
+        { "exerciseId": "seated-leg-curl", "sets": 3, "repsMin": 10, "repsMax": 15 },
+        { "exerciseId": "leg-extension", "sets": 2, "repsMin": 10, "repsMax": 15 },
+        { "exerciseId": "cable-crunch", "sets": 3, "repsMin": 12, "repsMax": 20 },
+        { "exerciseId": "dumbbell-lateral-raise", "sets": 2, "repsMin": 12, "repsMax": 20 },
+        { "exerciseId": "hammer-curl", "sets": 2, "repsMin": 10, "repsMax": 15 }
+      ]
+    }
+  ],
+  "schedule": {
+    "timezone": "Europe/Brussels",
+    "weekStartsOn": "monday",
+    "entries": [
+      { "id": "mon-upper-a", "workoutId": "upper-a", "weekday": "monday", "time": "20:00" },
+      { "id": "tue-lower-a", "workoutId": "lower-a", "weekday": "tuesday", "time": "20:00" },
+      { "id": "thu-upper-b", "workoutId": "upper-b", "weekday": "thursday", "time": "20:00" },
+      { "id": "sun-lower-b", "workoutId": "lower-b", "weekday": "sunday", "time": "11:00" }
+    ]
+  },
+  "habits": [
+    { "id": "lunch-walk", "name": "Lunch walk", "type": "duration", "target": { "min": 25, "max": 30, "unit": "min" }, "weekdays": ["monday", "tuesday", "wednesday", "thursday", "friday"], "scheduledTime": "12:30" },
+    { "id": "sleep", "name": "Sleep", "type": "duration", "target": { "min": 7, "max": 9, "unit": "h" }, "frequency": "daily" },
+    { "id": "morning-weigh-in", "name": "Morning weigh-in", "type": "measurement", "measurementId": "bodyweight", "frequency": "daily" },
+    { "id": "waist-measurement", "name": "Waist measurement", "type": "measurement", "measurementId": "waist", "frequency": "weekly" }
+  ],
+  "measurements": [
+    { "id": "bodyweight", "name": "Body weight", "unit": "kg", "frequency": "daily", "trend": "rolling7" },
+    { "id": "waist", "name": "Waist", "unit": "cm", "frequency": "weekly" },
+    { "id": "chest", "name": "Chest", "unit": "cm", "frequency": "monthly" },
+    { "id": "upper-arm", "name": "Upper arm", "unit": "cm", "frequency": "monthly" }
+  ],
+  "reminders": { "workout": { "enabled": true, "offsetsMinutes": [1440, 30] } },
+  "preferences": { "weightUnit": "kg", "progressionMethod": "double_progression", "restTimerEnabled": true }
+}

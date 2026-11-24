@@ -178,7 +178,7 @@ Three independent layers. Deleting or changing one never silently changes anothe
 ### 5.1 Programme configuration
 | Table | Key | Contents |
 |---|---|---|
-| `plans` | `id` | `status: active\|inactive\|archived`, `revision`, `importedAt`, `activatedAt`, `json` (the validated plan) |
+| `plans` | `id` | `status: active\|inactive\|archived`, `revision`, `importedAt`, `activatedAt`, `startDate` (activation start date, a local override; the plan file is untouched), `json` (the validated plan) |
 | `planRevisions` | `[planId+revision]` | Every imported revision, kept so you can see what changed and roll back |
 
 ### 5.2 Personal records
@@ -524,7 +524,7 @@ Plans (incl. start date, permanent swaps) · Plan generator · Exercises (increm
 | Phase | Deliverables | Verify |
 |---|---|---|
 | **0 · Spike ✅ done 24 Nov** | Minimal PWA on Pages + Worker + test feed | Passed on iPhone: install, offline, persistent storage (granted), data across restarts, wake lock, timestamp timer, file import, Share export, calendar subscription with 3 alerts, live feed update. Revoke changed to an empty feed (re-verify). |
-| **1 · Foundation** | Repo, CI deploy, design tokens and components, schema v1 + precompiled validator, Dexie schema, onboarding, plan import + preview | Unit tests; import both example plans |
+| **1 · Foundation ✅ built 24 Nov** | Repo, CI deploy, design tokens and components, schema v1 + precompiled validator, Dexie schema, onboarding, plan import + preview | 37 unit tests; both example plans import. Not built yet: the update change summary (phase 3) and Restore backup on first launch (phase 4). |
 | **2 · Core training** | Scheduler + phases, Today, workout session, prefill, rest timer, progression, **exercise substitution + custom exercises**, unilateral logging, history | Run a full mock session on the phone, including two swaps |
 | **3 · Plan management** | Updates with change summaries, switching, archive/delete, schedule overrides, habits | Update-flow tests; history preserved |
 | **4 · Progress & portability** | Charts, measurements (rolling average), backup/restore, CSV, profile, plan generator kit | Backup round trip on the device; AI generation test ×3 |

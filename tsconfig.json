@@ -14,5 +14,5 @@
     "resolveJsonModule": true,
     "types": ["vite/client", "vite-plugin-pwa/client", "vite-plugin-pwa/preact"]
   },
-  "include": ["src", "tests", "vite.config.ts"]
+  "include": ["src", "vite.config.ts"]
 }

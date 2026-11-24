@@ -1,0 +1,61 @@
+import { back, navigate } from '../../app/router';
+import { db } from '../../db/db';
+import { useLive } from '../../db/live';
+import { SCHEMA_VERSION } from '../../features/plans/types';
+import { Card, Row, Section, Tag, TopBar } from '../../ui/components';
+import { chooseFileAndPreview, EXAMPLES, previewExample } from '../onboarding/loadPlan';
+
+const ORDER = { active: 0, inactive: 1, archived: 2 } as const;
+
+export function SettingsScreen() {
+  const plans = useLive(() => db.plans.toArray(), []);
+  const meta = useLive(() => db.meta.get('meta'), []);
+  const sorted = [...(plans ?? [])].sort((a, b) => ORDER[a.status] - ORDER[b.status] || a.json.metadata.name.localeCompare(b.json.metadata.name));
+
+  return (
+    <main class="screen">
+      <TopBar title="Settings" onBack={back} />
+
+      <Section title="Plans">
+        <Card class="flush">
+          {sorted.map((p) => (
+            <Row
+              key={p.id}
+              title={p.json.metadata.name}
+              detail={`rev ${p.revision}`}
+              trailing={p.status !== 'inactive' ? <Tag tone={p.status === 'active' ? 'acc' : 'mut'}>{p.status}</Tag> : undefined}
+              chevron
+              onClick={() => navigate({ name: 'plan', id: p.id })}
+            />
+          ))}
+          <Row title="Import plan" detail="From Files or iCloud Drive" chevron onClick={() => void chooseFileAndPreview()} />
+        </Card>
+      </Section>
+
+      <Section title="Example plans">
+        <Card class="flush">
+          {EXAMPLES.map((ex) => (
+            <Row key={ex.file} title={ex.name} detail={ex.detail} chevron onClick={() => void previewExample(ex.file)} />
+          ))}
+        </Card>
+      </Section>
+
+      <Section title="About">
+        <Card class="flush">
+          <Row title="Version" trailing={<span class="num">{__APP_VERSION__}</span>} />
+          <Row title="Plan format" trailing={<span class="num">{SCHEMA_VERSION}</span>} />
+          <Row
+            title="Persistent storage"
+            detail={
+              meta?.persistGranted
+                ? 'iOS will not clear data on its own. Deleting the app still removes it.'
+                : 'iOS may clear data when storage runs low. Keep a backup.'
+            }
+            trailing={meta?.persistGranted ? <Tag tone="lime">granted</Tag> : <Tag>not granted</Tag>}
+          />
+          <Row title="Device check" detail="Test what this iPhone supports" chevron onClick={() => navigate({ name: 'device-check' })} />
+        </Card>
+      </Section>
+    </main>
+  );
+}

@@ -17,14 +17,14 @@
   border-radius: var(--r-card); padding: 10px 10px 10px 16px;
 }
 
-.row {
+.check {
   background: var(--panel);
   border: 1px solid var(--line);
   border-radius: var(--r-card);
   padding: 14px 14px 12px;
 }
-.row header { display: flex; align-items: center; gap: 10px; }
-.row h2 { margin: 0; font-size: 15px; font-weight: 600; }
+.check header { display: flex; align-items: center; gap: 10px; }
+.check h2 { margin: 0; font-size: 15px; font-weight: 600; }
 .mark {
   width: 22px; height: 22px; border-radius: 11px; flex: none;
   display: inline-flex; align-items: center; justify-content: center;

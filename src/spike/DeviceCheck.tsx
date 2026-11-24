@@ -1,8 +1,8 @@
-// Phase 0 — iPhone capability check. Temporary screen; replaced by the real app in phase 1.
+// Phase 0 â€” iPhone capability check. Temporary screen; replaced by the real app in phase 1.
 import type { ComponentChildren } from 'preact';
 import { useEffect, useRef, useState } from 'preact/hooks';
-import { useRegisterSW } from 'virtual:pwa-register/preact';
 import { buildIcs } from '../features/calendar/ics';
+import { TopBar } from '../ui/components';
 import './spike.css';
 
 type Status = 'pass' | 'fail' | 'wait' | 'info';
@@ -73,7 +73,7 @@ async function shareFile(name: string, type: string, text: string): Promise<stri
   a.download = name;
   a.click();
   setTimeout(() => URL.revokeObjectURL(url), 10_000);
-  return 'canShare(files) unavailable — used download fallback';
+  return 'canShare(files) unavailable â€” used download fallback';
 }
 
 function testEventIcs(minutesFromNow: number, label: string): string {
@@ -85,7 +85,7 @@ function testEventIcs(minutesFromNow: number, label: string): string {
     events: [
       {
         uid: `spike-${label}@teto-fitness`,
-        title: `TETO test · ${label}`,
+        title: `TETO test Â· ${label}`,
         description: 'Phase 0 test event. Safe to delete.',
         startUtc: start,
         durationMinutes: 30,
@@ -98,9 +98,9 @@ function testEventIcs(minutesFromNow: number, label: string): string {
 
 // ---------- UI pieces ----------
 function Row(props: { title: string; status: Status; detail: string; children?: ComponentChildren; help?: string }) {
-  const mark = { pass: '✓', fail: '✕', wait: '…', info: 'i' }[props.status];
+  const mark = { pass: 'âœ“', fail: 'âœ•', wait: 'â€¦', info: 'i' }[props.status];
   return (
-    <section class="row">
+    <section class="check">
       <header>
         <span class={`mark ${props.status}`} aria-label={props.status}>{mark}</span>
         <h2>{props.title}</h2>
@@ -112,17 +112,11 @@ function Row(props: { title: string; status: Status; detail: string; children?: 
   );
 }
 
-export function DeviceCheck() {
+export function DeviceCheck({ onBack }: { onBack: () => void }) {
   const [r, setR] = useState<Results>({});
   const set = (key: string, status: Status, detail: string) =>
     setR((prev) => ({ ...prev, [key]: { status, detail } }));
   const get = (key: string) => r[key] ?? { status: 'wait' as Status, detail: 'Not run yet' };
-
-  const {
-    needRefresh: [needRefresh],
-    offlineReady: [offlineReady],
-    updateServiceWorker,
-  } = useRegisterSW();
 
   // ---- passive checks on load ----
   useEffect(() => {
@@ -137,7 +131,7 @@ export function DeviceCheck() {
         };
         const next = { count: prev.count + 1, first: prev.first };
         await idb('readwrite', (s) => s.put(next, 'opens'));
-        set('idb', next.count > 1 ? 'pass' : 'info', `Opened ${next.count}× since ${new Date(next.first).toLocaleString()}`);
+        set('idb', next.count > 1 ? 'pass' : 'info', `Opened ${next.count}Ã— since ${new Date(next.first).toLocaleString()}`);
       } catch (e) {
         set('idb', 'fail', `IndexedDB error: ${(e as Error).message}`);
       }
@@ -147,16 +141,13 @@ export function DeviceCheck() {
     void refreshOffline();
   }, []);
 
-  useEffect(() => {
-    if (offlineReady) void refreshOffline();
-  }, [offlineReady]);
 
   async function refreshStorage() {
     if (!navigator.storage?.estimate) return set('storage', 'fail', 'Storage API unavailable');
     const persisted = (await navigator.storage.persisted?.()) ?? false;
     const est = await navigator.storage.estimate();
     const mb = (n?: number) => (n ? `${(n / 1e6).toFixed(1)} MB` : '?');
-    set('storage', persisted ? 'pass' : 'info', `Persistent: ${persisted ? 'yes' : 'no'} · used ${mb(est.usage)} of ${mb(est.quota)}`);
+    set('storage', persisted ? 'pass' : 'info', `Persistent: ${persisted ? 'yes' : 'no'} Â· used ${mb(est.usage)} of ${mb(est.quota)}`);
   }
 
   async function refreshOffline() {
@@ -165,7 +156,7 @@ export function DeviceCheck() {
     set(
       'offline',
       controlled && cacheNames.length ? 'pass' : 'info',
-      `Service worker ${controlled ? 'active' : 'not controlling yet'} · ${cacheNames.length} cache(s) · ${navigator.onLine ? 'online' : 'offline now'}`,
+      `Service worker ${controlled ? 'active' : 'not controlling yet'} Â· ${cacheNames.length} cache(s) Â· ${navigator.onLine ? 'online' : 'offline now'}`,
     );
   }
 
@@ -176,9 +167,9 @@ export function DeviceCheck() {
     try {
       wakeRef.current = await navigator.wakeLock.request('screen');
       wakeRef.current.addEventListener('release', () => {
-        if (wantWake.current) set('wake', 'info', 'Released by the system — will re-acquire when visible');
+        if (wantWake.current) set('wake', 'info', 'Released by the system â€” will re-acquire when visible');
       });
-      set('wake', 'pass', 'Screen wake lock active — leave the phone untouched and check it stays on');
+      set('wake', 'pass', 'Screen wake lock active â€” leave the phone untouched and check it stays on');
     } catch (e) {
       set('wake', 'fail', `Wake lock failed: ${(e as Error).name} ${(e as Error).message}`);
     }
@@ -218,7 +209,7 @@ export function DeviceCheck() {
       beeped.current = true;
       const late = Math.round((now - timerEnd) / 1000);
       beep();
-      set('timer', 'pass', late > 2 ? `Finished (you came back ${late}s after it ended — remaining time stayed correct)` : 'Finished on time — did you hear the beep?');
+      set('timer', 'pass', late > 2 ? `Finished (you came back ${late}s after it ended â€” remaining time stayed correct)` : 'Finished on time â€” did you hear the beep?');
     }
   }, [now, timerEnd]);
   function startTimer(seconds: number) {
@@ -227,7 +218,7 @@ export function DeviceCheck() {
     const end = Date.now() + seconds * 1000;
     localStorage.setItem('spike-timer-end', String(end));
     setTimerEnd(end);
-    set('timer', 'info', `Running ${seconds}s — try locking the phone and coming back`);
+    set('timer', 'info', `Running ${seconds}s â€” try locking the phone and coming back`);
   }
   async function refreshTimer() {
     setNow(Date.now());
@@ -242,7 +233,7 @@ export function DeviceCheck() {
       const text = await file.text();
       const json = JSON.parse(text) as unknown;
       const keys = json && typeof json === 'object' ? Object.keys(json).slice(0, 6).join(', ') : typeof json;
-      set('import', 'pass', `Read "${file.name}" (${file.size} bytes) · keys: ${keys}`);
+      set('import', 'pass', `Read "${file.name}" (${file.size} bytes) Â· keys: ${keys}`);
     } catch (err) {
       set('import', 'fail', `Could not parse "${file.name}": ${(err as Error).message}`);
     }
@@ -296,14 +287,14 @@ export function DeviceCheck() {
   // ---- report ----
   async function copyReport() {
     const lines = [
-      `TETO Fitness device check · v${__APP_VERSION__} · built ${__BUILD_TIME__}`,
-      `${iosVersion()} · ${isStandalone() ? 'standalone' : 'browser tab'} · ${new Date().toISOString()}`,
+      `TETO Fitness device check Â· v${__APP_VERSION__} Â· built ${__BUILD_TIME__}`,
+      `${iosVersion()} Â· ${isStandalone() ? 'standalone' : 'browser tab'} Â· ${new Date().toISOString()}`,
       ...Object.entries(r).map(([k, v]) => `${v.status.toUpperCase().padEnd(4)} ${k}: ${v.detail}`),
     ];
     const text = lines.join('\n');
     try {
       await navigator.clipboard.writeText(text);
-      set('report', 'pass', 'Copied — paste it into the chat');
+      set('report', 'pass', 'Copied â€” paste it into the chat');
     } catch {
       set('report', 'info', await shareFile('teto-device-check.txt', 'text/plain', text));
     }
@@ -313,49 +304,39 @@ export function DeviceCheck() {
 
   return (
     <main class="spike">
-      <div class="brand">
-        <b>T.E.T.O.</b>
-        <span>Fitness · device check</span>
-      </div>
+      <TopBar title="Device check" onBack={onBack} />
       <p class="meta num">
-        v{__APP_VERSION__} · {iosVersion()} · {isStandalone() ? 'standalone' : 'browser'}
+        v{__APP_VERSION__} Â· {isStandalone() ? 'standalone' : 'browser'}
       </p>
 
-      {needRefresh && (
-        <div class="banner">
-          <span>New version available</span>
-          <button class="btn primary" onClick={() => void updateServiceWorker(true)}>Update</button>
-        </div>
-      )}
+      <Row title="1 Â· Home Screen install" {...get('install')}
+        help="In Safari: Share â†’ Add to Home Screen, then open TETO from the icon and run the checks there." />
 
-      <Row title="1 · Home Screen install" {...get('install')}
-        help="In Safari: Share → Add to Home Screen, then open TETO from the icon and run the checks there." />
-
-      <Row title="2 · Offline" {...get('offline')}
+      <Row title="2 Â· Offline" {...get('offline')}
         help="After this shows active: turn on Airplane mode, close the app fully, reopen it from the icon.">
         <button class="btn" onClick={() => void refreshOffline()}>Recheck</button>
       </Row>
 
-      <Row title="3 · Data survives reopen" {...get('idb')}
+      <Row title="3 Â· Data survives reopen" {...get('idb')}
         help="Close the app (swipe it away) and reopen. The counter must go up." />
 
-      <Row title="4 · Persistent storage" {...get('storage')}>
+      <Row title="4 Â· Persistent storage" {...get('storage')}>
         <button class="btn" onClick={async () => { await navigator.storage?.persist?.(); await refreshStorage(); }}>Request persistence</button>
       </Row>
 
-      <Row title="5 · Keep screen awake" {...get('wake')}
+      <Row title="5 Â· Keep screen awake" {...get('wake')}
         help="Turn it on, put the phone down for 2+ minutes. Then switch apps and come back: it should re-activate.">
         <button class="btn" onClick={() => void toggleWake()}>{wantWake.current ? 'Release' : 'Keep awake'}</button>
       </Row>
 
-      <Row title="6 · Rest timer + sound" {...get('timer')}
+      <Row title="6 Â· Rest timer + sound" {...get('timer')}
         help="Start 30s, lock the phone, unlock after ~45s: it should show finished. Then run 10s with the app open and listen for the beep (ringer on).">
-        <span class="timer num">{timerEnd ? `${Math.floor(remaining / 60)}:${String(remaining % 60).padStart(2, '0')}` : '–:––'}</span>
+        <span class="timer num">{timerEnd ? `${Math.floor(remaining / 60)}:${String(remaining % 60).padStart(2, '0')}` : 'â€“:â€“â€“'}</span>
         <button class="btn" onClick={() => startTimer(10)}>10 s</button>
         <button class="btn" onClick={() => startTimer(30)}>30 s</button>
       </Row>
 
-      <Row title="7 · Import a file" {...get('import')}
+      <Row title="7 Â· Import a file" {...get('import')}
         help="Pick any .json file from Files or iCloud Drive (e.g. the one exported in step 8).">
         <label class="btn">
           Choose file
@@ -363,7 +344,7 @@ export function DeviceCheck() {
         </label>
       </Row>
 
-      <Row title="8 · Export via Share sheet" {...get('share')}
+      <Row title="8 Â· Export via Share sheet" {...get('share')}
         help="Should open the Share sheet with 'Save to Files'.">
         <button class="btn" onClick={async () => {
           const res = await shareFile('teto-test-backup.json', 'application/json', JSON.stringify({ format: 'teto-backup', test: true, at: new Date().toISOString() }, null, 2));
@@ -371,23 +352,35 @@ export function DeviceCheck() {
         }}>Export test file</button>
       </Row>
 
-      <Row title="9 · Calendar subscription (static test feed)" {...get('calStatic')}
-        help="Tap Subscribe. In the subscription screen make sure 'Remove Alerts' is OFF. Expect daily 'TETO test · rev 1' events at 12:00 and 21:00 with 3 alerts (30, 10, 5 min) — check how many alerts iOS keeps.">
-        <a class="btn primary" href={staticFeed} onClick={() => set('calStatic', 'info', 'Subscribe link opened — report what Calendar showed')}>Subscribe</a>
+      <Row title="9 Â· Calendar subscription (static test feed)" {...get('calStatic')}
+        help="Tap Subscribe. In the subscription screen make sure 'Remove Alerts' is OFF. Expect daily 'TETO test Â· rev 1' events at 12:00 and 21:00 with 3 alerts (30, 10, 5 min) â€” check how many alerts iOS keeps.">
+        <a class="btn primary" href={staticFeed} onClick={() => set('calStatic', 'info', 'Subscribe link opened â€” report what Calendar showed')}>Subscribe</a>
         <a class="btn" href={`${BASE}spike/test.ics`} target="_blank" rel="noopener">Open in Safari</a>
       </Row>
 
-      <Row title="10 · Calendar file (one-time import fallback)" {...get('calFile')}
+      <Row title="10 Â· Calendar file (one-time import fallback)" {...get('calFile')}
         help="Creates an event 10 minutes from now with alerts at 5 min, 2 min and start. Share it to Calendar or save then open.">
         <button class="btn" onClick={async () => set('calFile', 'info', await shareFile('teto-test.ics', 'text/calendar', testEventIcs(10, 'file')))}>Export .ics</button>
       </Row>
 
-      <Row title="11 · Live calendar via Cloudflare" {...(CAL_API ? get('worker') : { status: 'wait' as Status, detail: 'Worker not deployed yet — added after Cloudflare setup' })}
+      <Row title="11 Â· Live calendar via Cloudflare" {...(CAL_API ? get('worker') : { status: 'wait' as Status, detail: 'Worker not deployed yet â€” added after Cloudflare setup' })}
         help={feed ? `Feed: ${feedUrl}` : undefined}>
         {CAL_API && !feed && <button class="btn primary" onClick={() => void createFeed()}>Create test feed</button>}
         {feed && <a class="btn primary" href={feedUrl.replace(/^https?:/, 'webcal:')}>Subscribe</a>}
         {feed && <button class="btn" onClick={() => void pushFeed()}>Move event to +15 min</button>}
         {feed && <button class="btn" onClick={() => void revokeFeed()}>Revoke</button>}
+      </Row>
+
+      <Row title="12 Â· Sound with the ringer off" {...get('silent')}
+        help="Keep the ringer switch OFF (silent). Tap the button: did you hear 3 beeps? This tests whether rest-timer sound can play through silent mode.">
+        <button class="btn" onClick={() => {
+          const nav = navigator as Navigator & { audioSession?: { type: string } };
+          if (!nav.audioSession) return set('silent', 'fail', 'navigator.audioSession not available');
+          nav.audioSession.type = 'playback';
+          unlockAudio();
+          setTimeout(beep, 150);
+          set('silent', 'info', `audioSession.type = "${nav.audioSession.type}" â€” report whether you heard it`);
+        }}>Play test beep</button>
       </Row>
 
       <div class="report">

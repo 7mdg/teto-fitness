@@ -1,0 +1,285 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://7mdg.github.io/teto-fitness/schemas/teto-plan.v1.schema.json",
+  "title": "TETO Fitness plan",
+  "description": "A training plan for TETO Fitness. Data only: no code, no HTML. Cross-references (exerciseId, workoutId, measurementId, alternatives) are checked by the app after schema validation; see docs/PLAN_FORMAT.md.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["format", "schemaVersion", "metadata", "exercises", "workouts", "schedule"],
+  "properties": {
+    "$schema": { "type": "string", "description": "Optional link to this schema, for editors." },
+    "format": { "const": "teto-plan", "description": "Always \"teto-plan\"." },
+    "schemaVersion": {
+      "type": "string",
+      "pattern": "^1\\.\\d+\\.\\d+$",
+      "description": "Semantic version of the plan format. This schema accepts 1.x.y. Use \"1.0.0\"."
+    },
+    "metadata": { "$ref": "#/$defs/metadata" },
+    "profile": { "$ref": "#/$defs/profile" },
+    "goals": { "$ref": "#/$defs/goals" },
+    "programme": { "$ref": "#/$defs/programme" },
+    "exercises": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 300,
+      "description": "Exercise library. Every exercise used in a workout or listed as an alternative must be defined here.",
+      "items": { "$ref": "#/$defs/exercise" }
+    },
+    "workouts": {
+      "type": "array",
+      "maxItems": 50,
+      "description": "Workout templates. May be empty for a habit-only plan.",
+      "items": { "$ref": "#/$defs/workout" }
+    },
+    "schedule": { "$ref": "#/$defs/schedule" },
+    "habits": { "type": "array", "maxItems": 30, "items": { "$ref": "#/$defs/habit" } },
+    "measurements": { "type": "array", "maxItems": 30, "items": { "$ref": "#/$defs/measurement" } },
+    "reminders": { "$ref": "#/$defs/reminders" },
+    "preferences": { "$ref": "#/$defs/preferences" },
+    "nutrition": { "type": "object", "description": "Reserved for a future version. Accepted and ignored." }
+  },
+  "$defs": {
+    "slug": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+      "maxLength": 64,
+      "description": "Lowercase letters, digits and single hyphens, e.g. \"incline-dumbbell-press\". Stable forever: history is matched on it."
+    },
+    "text": { "type": "string", "minLength": 1, "maxLength": 120 },
+    "longText": { "type": "string", "maxLength": 2000 },
+    "date": {
+      "type": "string",
+      "pattern": "^\\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])$",
+      "description": "Calendar date YYYY-MM-DD."
+    },
+    "time": { "type": "string", "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$", "description": "24-hour local time HH:MM." },
+    "weekday": { "enum": ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"] },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "revision", "name"],
+      "properties": {
+        "id": { "$ref": "#/$defs/slug", "description": "Plan id. Keep it identical when revising a plan so the app recognises the update." },
+        "revision": { "type": "integer", "minimum": 1, "description": "Increase by 1 on every edit." },
+        "name": { "$ref": "#/$defs/text" },
+        "author": { "$ref": "#/$defs/text" },
+        "description": { "$ref": "#/$defs/longText" },
+        "createdAt": { "$ref": "#/$defs/date" }
+      }
+    },
+    "profile": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Optional personal information. Only used to pre-fill Settings → Profile on first import.",
+      "properties": {
+        "displayName": { "$ref": "#/$defs/text" },
+        "heightCm": { "type": "number", "minimum": 50, "maximum": 260 },
+        "initialWeightKg": { "type": "number", "minimum": 20, "maximum": 400, "description": "Approximate starting weight. A reference only, not a measurement." },
+        "activityLevel": { "enum": ["sedentary", "lightly_active", "moderately_active", "very_active"] },
+        "experience": { "enum": ["beginner", "returning_beginner", "intermediate", "advanced"] },
+        "notes": { "$ref": "#/$defs/longText" }
+      }
+    },
+    "goals": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "primary": { "enum": ["muscle_gain", "fat_loss", "body_recomposition", "strength", "general_fitness", "endurance", "mobility", "other"] },
+        "priorities": { "type": "array", "maxItems": 10, "items": { "$ref": "#/$defs/text" } }
+      }
+    },
+    "programme": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "durationWeeks": { "type": "integer", "minimum": 1, "maximum": 104 },
+        "startDate": { "$ref": "#/$defs/date", "description": "First day of week 1. Can be changed when activating the plan." },
+        "onCompletion": { "enum": ["continue", "stop"], "default": "continue", "description": "continue = keep repeating the last phase after durationWeeks; stop = no more sessions." },
+        "phases": { "type": "array", "maxItems": 20, "items": { "$ref": "#/$defs/phase" } }
+      }
+    },
+    "phase": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name", "startWeek", "endWeek"],
+      "properties": {
+        "id": { "$ref": "#/$defs/slug" },
+        "name": { "$ref": "#/$defs/text" },
+        "startWeek": { "type": "integer", "minimum": 1, "maximum": 104 },
+        "endWeek": { "type": "integer", "minimum": 1, "maximum": 104 },
+        "workingSetsCap": { "type": "integer", "minimum": 1, "maximum": 20, "description": "Effective sets = min(prescribed sets, workingSetsCap)." },
+        "targetRir": { "type": "integer", "minimum": 0, "maximum": 5, "description": "Target repetitions in reserve." },
+        "notes": { "$ref": "#/$defs/longText" }
+      }
+    },
+    "exercise": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name", "tracking"],
+      "properties": {
+        "id": { "$ref": "#/$defs/slug", "description": "Global canonical id. Same id = same exercise across plans. Different equipment or weight convention = different id." },
+        "name": { "$ref": "#/$defs/text" },
+        "tracking": {
+          "enum": ["strength", "bodyweight", "duration", "cardio", "isometric", "checkbox"],
+          "description": "strength: weight + reps. bodyweight: reps (+ optional added weight). duration: time. cardio: distance and/or time. isometric: hold time per set. checkbox: done only."
+        },
+        "equipment": { "enum": ["barbell", "dumbbell", "machine", "cable", "bodyweight", "kettlebell", "band", "smith", "other"] },
+        "category": { "enum": ["compound", "isolation"] },
+        "muscleGroups": { "type": "array", "maxItems": 10, "uniqueItems": true, "items": { "$ref": "#/$defs/slug" } },
+        "weightMode": {
+          "enum": ["total", "per_dumbbell", "per_side", "added", "assisted"],
+          "description": "total: whole load (barbell incl. bar, machine weight, cable stack). per_dumbbell: one dumbbell. per_side: one side of a unilateral cable/machine. added: extra weight on a bodyweight move. assisted: assistance weight."
+        },
+        "defaultRestSeconds": { "type": "integer", "minimum": 0, "maximum": 900 },
+        "weightIncrementKg": { "type": "number", "exclusiveMinimum": 0, "maximum": 50 },
+        "unilateral": { "type": "boolean", "default": false },
+        "sideLogging": { "enum": ["combined", "separate"], "default": "combined" },
+        "alternatives": {
+          "type": "array",
+          "maxItems": 10,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/slug" },
+          "description": "Ids of exercises offered as swaps, in display order. Each must exist in exercises."
+        },
+        "notes": { "$ref": "#/$defs/longText" }
+      },
+      "if": { "properties": { "tracking": { "const": "strength" } }, "required": ["tracking"] },
+      "then": { "required": ["weightMode"] }
+    },
+    "workoutExercise": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["exerciseId", "sets"],
+      "properties": {
+        "exerciseId": { "$ref": "#/$defs/slug" },
+        "sets": { "type": "integer", "minimum": 1, "maximum": 20 },
+        "repsMin": { "type": "integer", "minimum": 1, "maximum": 200 },
+        "repsMax": { "type": "integer", "minimum": 1, "maximum": 200 },
+        "durationSec": { "type": "integer", "minimum": 1, "maximum": 36000 },
+        "distanceM": { "type": "number", "exclusiveMinimum": 0, "maximum": 200000 },
+        "restSeconds": { "type": "integer", "minimum": 0, "maximum": 900 },
+        "optional": { "type": "boolean", "default": false },
+        "notes": { "$ref": "#/$defs/longText" },
+        "alternatives": { "type": "array", "maxItems": 10, "uniqueItems": true, "items": { "$ref": "#/$defs/slug" } }
+      }
+    },
+    "workout": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name", "exercises"],
+      "properties": {
+        "id": { "$ref": "#/$defs/slug" },
+        "name": { "$ref": "#/$defs/text" },
+        "focus": { "$ref": "#/$defs/text" },
+        "estimatedDurationMinutes": {
+          "oneOf": [
+            { "type": "integer", "minimum": 1, "maximum": 600 },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["min", "max"],
+              "properties": {
+                "min": { "type": "integer", "minimum": 1, "maximum": 600 },
+                "max": { "type": "integer", "minimum": 1, "maximum": 600 }
+              }
+            }
+          ]
+        },
+        "exercises": { "type": "array", "minItems": 1, "maxItems": 30, "items": { "$ref": "#/$defs/workoutExercise" } }
+      }
+    },
+    "schedule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["entries"],
+      "properties": {
+        "timezone": { "type": "string", "pattern": "^[A-Za-z_]+(/[A-Za-z0-9_+-]+){0,2}$", "default": "Europe/Brussels", "description": "IANA timezone, e.g. Europe/Brussels." },
+        "weekStartsOn": { "$ref": "#/$defs/weekday", "default": "monday" },
+        "entries": { "type": "array", "maxItems": 100, "items": { "$ref": "#/$defs/scheduleEntry" } }
+      }
+    },
+    "scheduleEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "workoutId", "time"],
+      "properties": {
+        "id": { "$ref": "#/$defs/slug" },
+        "workoutId": { "$ref": "#/$defs/slug" },
+        "weekday": { "$ref": "#/$defs/weekday", "description": "Recurring weekly on this day. Use either weekday or date." },
+        "date": { "$ref": "#/$defs/date", "description": "One-off session on this date. Use either weekday or date." },
+        "time": { "$ref": "#/$defs/time" },
+        "everyNWeeks": { "type": "integer", "minimum": 1, "maximum": 8, "default": 1, "description": "1 = every week, 2 = every other week, …" },
+        "weekOffset": { "type": "integer", "minimum": 0, "maximum": 7, "default": 0, "description": "Which week of the cycle (0-based, counted from the programme start). Must be < everyNWeeks." },
+        "optional": { "type": "boolean", "default": false }
+      },
+      "oneOf": [{ "required": ["weekday"] }, { "required": ["date"] }]
+    },
+    "habit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name", "type"],
+      "properties": {
+        "id": { "$ref": "#/$defs/slug" },
+        "name": { "$ref": "#/$defs/text" },
+        "type": { "enum": ["checkbox", "duration", "count", "measurement"] },
+        "target": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["unit"],
+          "properties": {
+            "min": { "type": "number", "minimum": 0 },
+            "max": { "type": "number", "minimum": 0 },
+            "unit": { "enum": ["min", "h", "count", "steps", "l", "km"] }
+          }
+        },
+        "weekdays": { "type": "array", "minItems": 1, "maxItems": 7, "uniqueItems": true, "items": { "$ref": "#/$defs/weekday" } },
+        "frequency": { "enum": ["daily", "weekly"], "description": "daily = every day (or the listed weekdays). weekly = once per week, shown until done." },
+        "scheduledTime": { "$ref": "#/$defs/time" },
+        "measurementId": { "$ref": "#/$defs/slug", "description": "Required for type measurement: logging this measurement completes the habit." }
+      },
+      "if": { "properties": { "type": { "const": "measurement" } }, "required": ["type"] },
+      "then": { "required": ["measurementId"] }
+    },
+    "measurement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name", "unit"],
+      "properties": {
+        "id": { "$ref": "#/$defs/slug", "description": "Canonical id, e.g. bodyweight, waist, chest, upper-arm. History is kept per id across plans." },
+        "name": { "$ref": "#/$defs/text" },
+        "unit": { "enum": ["kg", "lb", "cm", "in", "%"] },
+        "frequency": { "enum": ["daily", "weekly", "monthly"] },
+        "trend": { "enum": ["rolling7"], "description": "rolling7 = show a 7-day rolling average line." }
+      }
+    },
+    "reminders": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "workout": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": { "type": "boolean", "default": true },
+            "offsetsMinutes": {
+              "type": "array",
+              "maxItems": 6,
+              "uniqueItems": true,
+              "items": { "type": "integer", "minimum": 0, "maximum": 20160 },
+              "description": "Minutes before the workout, e.g. [1440, 30] = 24 h and 30 min before. 0 = at start."
+            }
+          }
+        }
+      }
+    },
+    "preferences": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "weightUnit": { "enum": ["kg", "lb"], "default": "kg" },
+        "progressionMethod": { "enum": ["double_progression", "none"], "default": "double_progression" },
+        "restTimerEnabled": { "type": "boolean", "default": true }
+      }
+    }
+  }
+}
