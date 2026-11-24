@@ -10,6 +10,8 @@ import { startSession } from '../../features/training/session';
 import { Button, Card, Dialog, Row, Section, Tag, TopBar } from '../../ui/components';
 import { formatClock, unlockAudio, useNow } from '../../ui/hooks';
 import { Icon } from '../../ui/icons';
+import { DaySheet } from './DaySheet';
+import { HabitsSection } from './Habits';
 
 type DayState = 'done' | 'missed' | 'planned' | 'rest';
 
@@ -27,6 +29,7 @@ export function Today({ record }: { record: PlanRecord }) {
   );
   const active = useLive(() => db.sessions.where('status').equals('active').first(), []);
   const [picker, setPicker] = useState(false);
+  const [day, setDay] = useState<string | null>(null);
 
   if (!overrides || !sessions) return <main class="screen has-tabs" />;
 
@@ -104,7 +107,11 @@ export function Today({ record }: { record: PlanRecord }) {
         </Card>
       )}
 
-      <WeekStrip start={weekStart} today={today} state={dayState} />
+      <WeekStrip start={weekStart} today={today} state={dayState} onPick={setDay} />
+
+      <HabitsSection record={record} today={today} weekStart={weekStart} />
+
+      <DaySheet record={record} date={day} week={week} overrides={overrides} doneKeys={doneKeys} onClose={() => setDay(null)} />
 
       {!active && (
         <Button variant="ghost" full onClick={() => setPicker(true)}>
@@ -183,7 +190,7 @@ function ResumeCard({ session }: { session: SessionRecord }) {
   );
 }
 
-function WeekStrip(props: { start: string; today: string; state: (d: string) => DayState }) {
+function WeekStrip(props: { start: string; today: string; state: (d: string) => DayState; onPick: (d: string) => void }) {
   const days = Array.from({ length: 7 }, (_, i) => addDays(props.start, i));
   return (
     <Section title="This week">
@@ -191,11 +198,11 @@ function WeekStrip(props: { start: string; today: string; state: (d: string) => 
         {days.map((d) => {
           const st = props.state(d);
           return (
-            <div key={d} class={`day ${st} ${d === props.today ? 'today' : ''}`} aria-label={`${formatShort(d)}: ${st}`}>
+            <button type="button" key={d} class={`day ${st} ${d === props.today ? 'today' : ''}`} aria-label={`${formatShort(d)}: ${st}`} onClick={() => props.onPick(d)}>
               <span class="day-name">{weekdayOf(d).slice(0, 1).toUpperCase()}</span>
               <span class="day-num num">{Number(d.slice(8))}</span>
               <span class="day-dot">{st === 'done' ? <Icon name="check" size={12} /> : null}</span>
-            </div>
+            </button>
           );
         })}
       </div>

@@ -23,6 +23,9 @@
 
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
+  /* iOS 26 Home Screen apps can end the layout viewport above the screen bottom; measured in main.tsx. */
+  --vp-gap: 0px;
+  --bottom-pad: max(6px, calc(var(--safe-bottom) - var(--vp-gap)));
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -54,7 +57,8 @@ button { cursor: pointer; }
   gap: 8px;
 }
 .btn:active { background: var(--chip-hover); }
-.btn.primary { background: var(--acc); color: var(--bg); }
+/* Everything you can press to act is lime; teal marks information and location. */
+.btn.primary { background: var(--lime); color: var(--bg); }
 .btn:disabled { opacity: .45; }
 
 @media (prefers-reduced-motion: reduce) {

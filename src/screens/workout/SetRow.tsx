@@ -2,7 +2,7 @@ import { useEffect, useState } from 'preact/hooks';
 import type { SetRecord } from '../../db/db';
 import type { Exercise } from '../../features/plans/types';
 import type { PrefillRow } from '../../features/training/progression';
-import { displayIncrement, formatWeight, fromDisplay, parseDecimal, roundWeight, toDisplay, type WeightUnit } from '../../features/training/units';
+import { formatWeight, fromDisplay, parseDecimal, roundWeight, type WeightUnit } from '../../features/training/units';
 import { Icon } from '../../ui/icons';
 
 export interface SetValues {
@@ -14,14 +14,47 @@ export interface SetValues {
   distanceM?: number;
 }
 
+export type ColumnLayout = 'weight-reps' | 'weight-sides' | 'reps' | 'sides' | 'time' | 'cardio' | 'check';
+
+export function columnLayout(ex: Exercise, separateSides: boolean): ColumnLayout {
+  const t = ex.tracking;
+  const weighted = t === 'strength' || (t === 'bodyweight' && (ex.weightMode === 'added' || ex.weightMode === 'assisted'));
+  if (t === 'strength' || t === 'bodyweight') {
+    if (weighted) return separateSides ? 'weight-sides' : 'weight-reps';
+    return separateSides ? 'sides' : 'reps';
+  }
+  if (t === 'duration' || t === 'isometric') return 'time';
+  if (t === 'cardio') return 'cardio';
+  return 'check';
+}
+
+export function columnHeaders(layout: ColumnLayout, unit: WeightUnit, ex: Exercise): string[] {
+  const w = ex.weightMode === 'added' ? `+${unit}` : ex.weightMode === 'assisted' ? `assist ${unit}` : unit;
+  switch (layout) {
+    case 'weight-reps':
+      return [w, 'reps'];
+    case 'weight-sides':
+      return [w, 'L', 'R'];
+    case 'reps':
+      return ['reps'];
+    case 'sides':
+      return ['L', 'R'];
+    case 'time':
+      return ['sec'];
+    case 'cardio':
+      return ['min', 'km'];
+    case 'check':
+      return [];
+  }
+}
+
 interface Props {
   index: number;
   exercise: Exercise;
+  layout: ColumnLayout;
   logged: SetRecord[];
   prefill?: PrefillRow;
   unit: WeightUnit;
-  incrementKg: number;
-  separateSides: boolean;
   onLog: (v: SetValues) => void;
   onUnlog: () => void;
 }
@@ -29,90 +62,84 @@ interface Props {
 const str = (n: number | undefined) => (n === undefined ? '' : String(n));
 
 export function SetRow(p: Props) {
-  const t = p.exercise.tracking;
-  const showWeight = t === 'strength' || (t === 'bodyweight' && (p.exercise.weightMode === 'added' || p.exercise.weightMode === 'assisted'));
   const isLogged = p.logged.length > 0;
   const both = p.logged.find((s) => s.side === 'both');
   const left = p.logged.find((s) => s.side === 'left');
   const right = p.logged.find((s) => s.side === 'right');
   const src = both ?? left ?? right;
+  const cardio = p.layout === 'cardio';
 
-  const init = () => ({
-    weight: formatWeight(src?.weightKg ?? p.prefill?.weightKg, p.unit),
-    reps: str(both?.reps ?? p.prefill?.reps),
-    repsL: str(left?.reps ?? p.prefill?.reps),
-    repsR: str(right?.reps ?? p.prefill?.reps),
-    // Cardio time is entered in minutes, holds in seconds.
-    duration: (() => {
-      const sec = src?.durationSec ?? p.prefill?.durationSec;
-      return sec === undefined ? '' : String(t === 'cardio' ? Math.round((sec / 60) * 10) / 10 : sec);
-    })(),
-    distanceKm: src?.distanceM !== undefined || p.prefill?.distanceM !== undefined ? str(((src?.distanceM ?? p.prefill?.distanceM)! / 1000)) : '',
-  });
+  const init = () => {
+    const sec = src?.durationSec ?? p.prefill?.durationSec;
+    const dist = src?.distanceM ?? p.prefill?.distanceM;
+    return {
+      weight: formatWeight(src?.weightKg ?? p.prefill?.weightKg, p.unit),
+      reps: str(both?.reps ?? p.prefill?.reps),
+      repsL: str(left?.reps ?? p.prefill?.reps),
+      repsR: str(right?.reps ?? p.prefill?.reps),
+      // Cardio time is entered in minutes, holds in seconds.
+      duration: sec === undefined ? '' : String(cardio ? Math.round((sec / 60) * 10) / 10 : sec),
+      distanceKm: dist === undefined ? '' : String(dist / 1000),
+    };
+  };
   const [d, setD] = useState(init);
   const [invalid, setInvalid] = useState<string | null>(null);
-  // Refresh the draft when the prefill arrives or the exercise changes, unless the user is editing.
+
+  // Refresh the draft when the suggestion arrives or changes, unless this set is already logged.
   useEffect(() => {
     if (!isLogged) setD(init());
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [p.prefill?.weightKg, p.prefill?.reps, p.prefill?.durationSec, p.prefill?.distanceM, p.exercise.id, p.unit]);
-
-  // Show the stored value once logged (normalises "22,5" to 22.5 and reflects unit changes).
+  }, [p.prefill?.weightKg, p.prefill?.reps, p.prefill?.durationSec, p.prefill?.distanceM, p.exercise.id, p.unit, p.layout]);
+  // Show the stored value once logged (normalises "22,5" to 22.5).
   useEffect(() => {
     if (isLogged) setD(init());
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLogged, src?.weightKg, src?.reps, p.unit]);
 
-  const step = displayIncrement(p.incrementKg, p.unit);
-  const bump = (dir: 1 | -1) => {
-    const cur = parseDecimal(d.weight) ?? 0;
-    const next = Math.max(0, roundWeight(cur + dir * step, p.unit));
-    setD({ ...d, weight: String(next) });
-  };
-
   function confirm() {
     if (isLogged) return p.onUnlog();
-    const w = parseDecimal(d.weight);
     const v: SetValues = {};
-    if (showWeight) {
-      if (w === undefined && t === 'strength') return setInvalid('weight');
+    const L = p.layout;
+    if (L === 'weight-reps' || L === 'weight-sides') {
+      const w = parseDecimal(d.weight);
+      if (w === undefined && p.exercise.tracking === 'strength') return setInvalid('weight');
       if (w !== undefined) v.weightKg = roundWeight(fromDisplay(w, p.unit), 'kg');
     }
-    if (t === 'strength' || t === 'bodyweight') {
-      if (p.separateSides) {
-        const l = parseDecimal(d.repsL);
-        const r = parseDecimal(d.repsR);
-        if (l === undefined || r === undefined) return setInvalid('reps');
-        v.repsLeft = Math.round(l);
-        v.repsRight = Math.round(r);
-      } else {
-        const r = parseDecimal(d.reps);
-        if (r === undefined) return setInvalid('reps');
-        v.reps = Math.round(r);
-      }
+    if (L === 'weight-reps' || L === 'reps') {
+      const r = parseDecimal(d.reps);
+      if (r === undefined) return setInvalid('reps');
+      v.reps = Math.round(r);
     }
-    if (t === 'duration' || t === 'isometric') {
+    if (L === 'weight-sides' || L === 'sides') {
+      const l = parseDecimal(d.repsL);
+      const r = parseDecimal(d.repsR);
+      if (l === undefined) return setInvalid('repsL');
+      if (r === undefined) return setInvalid('repsR');
+      v.repsLeft = Math.round(l);
+      v.repsRight = Math.round(r);
+    }
+    if (L === 'time') {
       const s = parseDecimal(d.duration);
       if (s === undefined) return setInvalid('duration');
       v.durationSec = Math.round(s);
     }
-    if (t === 'cardio') {
-      const s = parseDecimal(d.duration);
+    if (L === 'cardio') {
+      const m = parseDecimal(d.duration);
       const km = parseDecimal(d.distanceKm);
-      if (s === undefined && km === undefined) return setInvalid('duration');
-      if (s !== undefined) v.durationSec = Math.round(s * 60);
+      if (m === undefined && km === undefined) return setInvalid('duration');
+      if (m !== undefined) v.durationSec = Math.round(m * 60);
       if (km !== undefined) v.distanceM = Math.round(km * 1000);
     }
     setInvalid(null);
     p.onLog(v);
   }
 
-  const input = (key: keyof typeof d, label: string, opts: { wide?: boolean; invalidKey?: string } = {}) => (
+  const input = (key: keyof typeof d, label: string) => (
     <input
-      class={`set-input num ${opts.wide ? 'wide' : ''} ${invalid === (opts.invalidKey ?? key) ? 'invalid' : ''}`}
+      class={`set-input num ${invalid === key ? 'invalid' : ''}`}
       inputMode="decimal"
       enterKeyHint="done"
-      aria-label={label}
+      aria-label={`Set ${p.index + 1} ${label}`}
       placeholder="–"
       value={d[key]}
       disabled={isLogged}
@@ -121,49 +148,17 @@ export function SetRow(p: Props) {
     />
   );
 
+  const L = p.layout;
   return (
-    <div class={`set-row ${isLogged ? 'logged' : ''} ${p.separateSides ? 'per-side' : ''}`}>
+    <div class={`set-row cols-${L} ${isLogged ? 'logged' : ''}`}>
       <span class="set-n num">{p.index + 1}</span>
-      {showWeight && (
-        <span class="weight-group">
-          <button type="button" class="step" aria-label="Less weight" disabled={isLogged} onClick={() => bump(-1)}>
-            <Icon name="minus" size={16} />
-          </button>
-          {input('weight', `Set ${p.index + 1} weight in ${p.unit}`)}
-          <button type="button" class="step" aria-label="More weight" disabled={isLogged} onClick={() => bump(1)}>
-            <Icon name="plus" size={16} />
-          </button>
-        </span>
-      )}
-      {(t === 'strength' || t === 'bodyweight') &&
-        (p.separateSides ? (
-          <span class="sides">
-            <span class="side-label">L</span>
-            {input('repsL', `Set ${p.index + 1} left reps`, { invalidKey: 'reps' })}
-            <span class="side-label">R</span>
-            {input('repsR', `Set ${p.index + 1} right reps`, { invalidKey: 'reps' })}
-          </span>
-        ) : (
-          <span class="reps-group">
-            {showWeight && <span class="times">×</span>}
-            {input('reps', `Set ${p.index + 1} reps`)}
-            {!showWeight && <span class="unit-label">reps</span>}
-          </span>
-        ))}
-      {(t === 'duration' || t === 'isometric') && (
-        <span class="reps-group">
-          {input('duration', `Set ${p.index + 1} seconds`, { wide: true })}
-          <span class="unit-label">s</span>
-        </span>
-      )}
-      {t === 'cardio' && (
-        <span class="reps-group">
-          {input('duration', 'Minutes', { invalidKey: 'duration' })}
-          <span class="unit-label">min</span>
-          {input('distanceKm', 'Kilometres')}
-          <span class="unit-label">km</span>
-        </span>
-      )}
+      {(L === 'weight-reps' || L === 'weight-sides') && input('weight', `weight in ${p.unit}`)}
+      {(L === 'weight-reps' || L === 'reps') && input('reps', 'reps')}
+      {(L === 'weight-sides' || L === 'sides') && input('repsL', 'left reps')}
+      {(L === 'weight-sides' || L === 'sides') && input('repsR', 'right reps')}
+      {L === 'time' && input('duration', 'seconds')}
+      {L === 'cardio' && input('duration', 'minutes')}
+      {L === 'cardio' && input('distanceKm', 'kilometres')}
       <button
         type="button"
         class={`check-btn ${isLogged ? 'on' : ''}`}
@@ -171,7 +166,7 @@ export function SetRow(p: Props) {
         aria-pressed={isLogged}
         onClick={confirm}
       >
-        <Icon name="check" size={22} />
+        <Icon name="check" size={24} />
       </button>
     </div>
   );
@@ -193,5 +188,3 @@ export const weightModeHint = (ex: Exercise, unit: WeightUnit): string | undefin
       return undefined;
   }
 };
-
-export { toDisplay };

@@ -2,6 +2,7 @@ import { useMemo, useState } from 'preact/hooks';
 import { back, resetTo, showToast } from '../../app/router';
 import { db } from '../../db/db';
 import { useLive } from '../../db/live';
+import { diffPlans } from '../../features/plans/diff';
 import { entryWhen, orderedEntries } from '../../features/plans/format';
 import { importPlan, requestPersistence, type ImportMode } from '../../features/plans/repository';
 import { defaultStartDate, summarisePlan } from '../../features/plans/summary';
@@ -21,6 +22,26 @@ function IssueList({ issues, warn }: { issues: PlanIssue[]; warn?: boolean }) {
         </li>
       ))}
     </ul>
+  );
+}
+
+function ChangeList({ changes }: { changes: string[] }) {
+  const [all, setAll] = useState(false);
+  if (!changes.length) return <p class="small">No changes to workouts, schedule, phases or habits.</p>;
+  const shown = all ? changes : changes.slice(0, 8);
+  return (
+    <div class="stack" style={{ gap: '6px' }}>
+      <ul class="changes">
+        {shown.map((c) => (
+          <li key={c}>{c}</li>
+        ))}
+      </ul>
+      {changes.length > shown.length && (
+        <Button variant="ghost" onClick={() => setAll(true)}>
+          {changes.length - shown.length} more
+        </Button>
+      )}
+    </div>
   );
 }
 
@@ -130,6 +151,7 @@ export function ImportPreview(props: { text: string; source: string }) {
                 Keep both
               </button>
             </div>
+            {choice === 'update' && <ChangeList changes={diffPlans(existing.json, p)} />}
             <p class="muted small">
               {choice === 'update' ? 'Your training history is preserved.' : 'Imported as a separate plan with its own id.'}
             </p>

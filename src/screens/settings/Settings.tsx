@@ -22,17 +22,24 @@ export function SettingsScreen() {
 
       <Section title="Workout">
         <Card class="flush">
-          <Toggle label="Rest timer" detail="Starts after each logged set" checked={settings.restTimerEnabled} onChange={(v) => save({ restTimerEnabled: v })} />
           <Toggle
-            label="Sound when rest ends"
-            detail="Tries to play even with the ringer off. The timer always turns lime."
-            checked={settings.sound}
-            onChange={(v) => {
-              if (v) unlockAudio();
-              save({ sound: v });
-              if (v) setTimeout(playRestDone, 150);
-            }}
+            label="Countdown rest timer"
+            detail={settings.restCountdown ? 'Counts down the plan’s rest after each set' : 'Off: shows time since your last set'}
+            checked={!!settings.restCountdown}
+            onChange={(v) => save({ restCountdown: v })}
           />
+          {settings.restCountdown && (
+            <Toggle
+              label="Sound when rest ends"
+              detail="Tries to play even with the ringer off. The timer always turns lime."
+              checked={settings.sound}
+              onChange={(v) => {
+                if (v) unlockAudio();
+                save({ sound: v });
+                if (v) setTimeout(playRestDone, 150);
+              }}
+            />
+          )}
           <Toggle label="Keep screen on" detail="During a workout" checked={settings.keepAwake} onChange={(v) => save({ keepAwake: v })} />
           <div class="row">
             <span class="row-main">
@@ -65,6 +72,14 @@ export function SettingsScreen() {
           <Row title="Import plan" detail="From Files or iCloud Drive" chevron onClick={() => void chooseFileAndPreview()} />
         </Card>
       </Section>
+
+      {sorted.some((p) => p.status === 'active' && p.json.habits?.length) && (
+        <Section title="Routine">
+          <Card class="flush">
+            <Row title="Habits" detail="Turn on or off, adjust targets" chevron onClick={() => navigate({ name: 'habits' })} />
+          </Card>
+        </Section>
+      )}
 
       <Section title="Example plans">
         <Card class="flush">

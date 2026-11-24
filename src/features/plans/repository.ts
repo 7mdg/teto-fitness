@@ -33,9 +33,13 @@ export async function importPlan(
   const id = plan.metadata.id;
   const ts = nowIso();
 
-  return database.transaction('rw', [database.plans, database.planRevisions, database.settings, database.profile, database.reminderPrefs], async () => {
+  return database.transaction(
+    'rw',
+    [database.plans, database.planRevisions, database.settings, database.profile, database.reminderPrefs, database.overrides, database.scheduleOverrides],
+    async () => {
     const existing = await database.plans.get(id);
     if (existing && opts.mode === 'new') throw new PlanConflictError(existing);
+    if (existing && opts.mode === 'update') await pruneStaleOverrides(existing.json, plan, database);
 
     await database.planRevisions.put({ planId: id, revision: plan.metadata.revision, importedAt: ts, json: plan });
 
@@ -76,6 +80,48 @@ export async function importPlan(
       await database.reminderPrefs.put({ key: 'workout', offsets: offsets.map((minutes) => ({ minutes, enabled })), editedByUser: false });
     }
     return record;
+    },
+  );
+}
+
+/**
+ * After an update, local tweaks survive unless the thing they belong to changed (SPEC §7):
+ * a permanent swap is dropped when its slot now holds a different exercise; habit tweaks and
+ * moved/skipped sessions are dropped when their habit or schedule entry no longer exists.
+ */
+async function pruneStaleOverrides(oldPlan: Plan, newPlan: Plan, database: TetoDB) {
+  const id = newPlan.metadata.id;
+  const slotExercise = (p: Plan, workoutId: string, slot: number) => p.workouts.find((w) => w.id === workoutId)?.exercises[slot]?.exerciseId;
+  const overrides = await database.overrides.where('planId').equals(id).toArray();
+  for (const o of overrides) {
+    let stale = false;
+    if (o.kind === 'slotSwap') {
+      const [workoutId, slotStr] = o.itemId.split('#') as [string, string];
+      const before = slotExercise(oldPlan, workoutId, Number(slotStr));
+      const after = slotExercise(newPlan, workoutId, Number(slotStr));
+      stale = !after || before !== after;
+    }
+    if (o.kind === 'habit') stale = !(newPlan.habits ?? []).some((h) => h.id === o.itemId);
+    if (stale) await database.overrides.delete([o.planId, o.kind, o.itemId]);
+  }
+  const entryIds = new Set(newPlan.schedule.entries.map((e) => e.id));
+  const sched = await database.scheduleOverrides.where('[planId+occurrenceKey]').between([id, ''], [id, '￿']).toArray();
+  for (const s of sched) if (!entryIds.has(s.occurrenceKey.split('@')[0]!)) await database.scheduleOverrides.delete(s.id);
+}
+
+export async function moveOccurrence(planId: string, occurrenceKey: string, date: string, time: string, database: TetoDB = db) {
+  await putScheduleOverride(planId, occurrenceKey, { action: 'move', date, time }, database);
+}
+export async function skipOccurrence(planId: string, occurrenceKey: string, database: TetoDB = db) {
+  await putScheduleOverride(planId, occurrenceKey, { action: 'skip' }, database);
+}
+export async function restoreOccurrence(planId: string, occurrenceKey: string, database: TetoDB = db) {
+  await database.scheduleOverrides.where('[planId+occurrenceKey]').equals([planId, occurrenceKey]).delete();
+}
+async function putScheduleOverride(planId: string, occurrenceKey: string, change: { action: 'move' | 'skip'; date?: string; time?: string }, database: TetoDB) {
+  await database.transaction('rw', database.scheduleOverrides, async () => {
+    await database.scheduleOverrides.where('[planId+occurrenceKey]').equals([planId, occurrenceKey]).delete();
+    await database.scheduleOverrides.put({ id: `${planId}:${occurrenceKey}`, planId, occurrenceKey, ...change });
   });
 }
 

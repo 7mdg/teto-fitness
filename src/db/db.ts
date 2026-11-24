@@ -92,7 +92,10 @@ export interface AppSettings {
   key: 'app';
   activePlanId?: string;
   weightUnit: 'kg' | 'lb';
+  /** Legacy plan default; superseded by restCountdown. */
   restTimerEnabled: boolean;
+  /** Countdown rest timer. Off (default): the workout shows time since the last set instead. */
+  restCountdown?: boolean;
   sound: boolean;
   keepAwake: boolean;
 }

@@ -8,7 +8,7 @@ import { formatWeight, type WeightUnit } from '../../features/training/units';
 import { Tag } from '../../ui/components';
 import { formatClock } from '../../ui/hooks';
 import { Icon } from '../../ui/icons';
-import { SetRow, weightModeHint, type SetValues } from './SetRow';
+import { columnHeaders, columnLayout, SetRow, weightModeHint, type SetValues } from './SetRow';
 
 const stripUndefined = <T extends object>(o: T): Partial<T> => Object.fromEntries(Object.entries(o).filter(([, v]) => v !== undefined)) as Partial<T>;
 
@@ -31,7 +31,7 @@ export function SlotCard(p: Props) {
   const exerciseId = currentExercise(p.session, p.slot.slot);
   const ex = p.session.prescription.exercises[exerciseId] ?? { id: exerciseId, name: exerciseId, tracking: 'strength' as const };
   const planned = p.session.prescription.exercises[p.slot.plannedExerciseId];
-  const swappedFrom = exerciseId !== p.slot.exerciseId || exerciseId !== p.slot.plannedExerciseId ? planned?.name : undefined;
+  const swappedFrom = exerciseId !== p.slot.plannedExerciseId ? planned?.name : undefined;
   const skipped = (p.session.skippedSlots ?? []).includes(p.slot.slot);
   const [previous, setPrevious] = useState<SetRecord[] | null>(null);
   const [extraRows, setExtraRows] = useState(0);
@@ -54,11 +54,15 @@ export function SlotCard(p: Props) {
 
   const loggedIdx = new Set(p.sets.map((s) => s.setIndex));
   const maxLogged = p.sets.length ? Math.max(...p.sets.map((s) => s.setIndex)) + 1 : 0;
-  const rowCount = Math.max(p.slot.sets + offset, maxLogged) + extraRows;
+  const baseRows = Math.max(p.slot.sets + offset, maxLogged);
+  const rowCount = baseRows + extraRows;
   const doneCount = loggedIdx.size;
   const target = targetLabel(p.slot, ex);
   const complete = doneCount >= p.slot.sets;
-  const unilateral = !!ex.unilateral;
+  const layout = columnLayout(ex, p.separateSides && !!ex.unilateral);
+  const headers = columnHeaders(layout, p.unit, ex);
+  // An added row can be removed again as long as it is the last one and not logged.
+  const canRemoveRow = extraRows > 0 && !loggedIdx.has(rowCount - 1);
 
   async function log(i: number, v: SetValues) {
     const base = { slot: p.slot.slot, setIndex: i, exerciseId: exerciseForSet(p.session, p.slot.slot, i), weightKg: v.weightKg, durationSec: v.durationSec, distanceM: v.distanceM };
@@ -79,35 +83,44 @@ export function SlotCard(p: Props) {
     <section class={`slot card ${p.expanded ? 'open' : ''} ${complete ? 'complete' : ''} ${skipped ? 'skipped' : ''}`}>
       <button type="button" class="slot-head" onClick={p.onToggle} aria-expanded={p.expanded}>
         <span class="row-main">
-          <span class="row-title">
+          <span class="slot-title">
             {ex.name}
             {p.slot.optional && <span class="muted small"> · optional</span>}
           </span>
-          <span class="row-detail num">
-            {skipped ? 'Skipped' : `${p.slot.sets} × ${target}`}
-            {!p.expanded && lastLine && !skipped ? ` · last ${lastLine}` : ''}
-          </span>
+          <span class="row-detail num">{skipped ? 'Skipped' : `${p.slot.sets} × ${target}`}</span>
         </span>
-        <span class={`slot-count num ${complete ? 'done' : ''}`}>
-          {complete ? <Icon name="check" size={16} /> : `${doneCount}/${p.slot.sets}`}
-        </span>
+        <span class={`slot-count num ${complete ? 'done' : ''}`}>{complete ? <Icon name="check" size={16} /> : `${doneCount}/${p.slot.sets}`}</span>
+        {!p.expanded && <Icon name="chevron" size={18} class="row-chevron" />}
       </button>
 
       {p.expanded && !skipped && (
         <div class="slot-body">
           <div class="slot-meta">
             {swappedFrom && <Tag tone="acc">for {swappedFrom}</Tag>}
-            {prefill.progressedByKg && <Tag tone="lime">↑ {fmt(prefill.progressedByKg)} {p.unit}</Tag>}
-            <span class="muted small num">
+            {prefill.progressedByKg && (
+              <Tag tone="lime">
+                ↑ {fmt(prefill.progressedByKg)} {p.unit}
+              </Tag>
+            )}
+            <span class="muted small">
               {[weightModeHint(ex, p.unit), p.slot.restSeconds ? `rest ${formatClock(p.slot.restSeconds)}` : ''].filter(Boolean).join(' · ')}
             </span>
           </div>
-          {lastLine && <p class="small muted num">Last: {lastLine}</p>}
-          {previous && !previous.length && ex.tracking === 'strength' && <p class="small muted">First time: enter the weight you use.</p>}
+          {lastLine && <p class="small muted">Last session: <span class="num">{lastLine}</span></p>}
+          {previous && !previous.length && ex.tracking === 'strength' && <p class="small muted">First session: enter the weight you use.</p>}
           {p.slot.notes && <p class="small">{p.slot.notes}</p>}
           {ex.notes && <p class="small muted">{ex.notes}</p>}
 
           <div class="sets">
+            {headers.length > 0 && (
+              <div class={`set-row set-head cols-${layout}`} aria-hidden="true">
+                <span>Set</span>
+                {headers.map((h) => (
+                  <span key={h}>{h}</span>
+                ))}
+                <span />
+              </div>
+            )}
             {Array.from({ length: rowCount }, (_, i) => {
               const rowEx = p.session.prescription.exercises[exerciseForSet(p.session, p.slot.slot, i)] ?? ex;
               const historyRow = i >= offset ? prefill.rows[Math.min(i - offset, prefill.rows.length - 1)] : undefined;
@@ -124,11 +137,10 @@ export function SlotCard(p: Props) {
                   key={`${i}-${rowEx.id}`}
                   index={i}
                   exercise={rowEx}
+                  layout={rowEx.id === ex.id ? layout : columnLayout(rowEx, p.separateSides && !!rowEx.unilateral)}
                   logged={p.sets.filter((s) => s.setIndex === i)}
                   prefill={rowPrefill}
                   unit={p.unit}
-                  incrementKg={increment}
-                  separateSides={p.separateSides && !!rowEx.unilateral}
                   onLog={(v) => void log(i, v)}
                   onUnlog={() => void unlog(i)}
                 />
@@ -143,7 +155,12 @@ export function SlotCard(p: Props) {
             <button type="button" class="chip" onClick={() => setExtraRows(extraRows + 1)}>
               <Icon name="plus" size={16} /> Set
             </button>
-            {unilateral && (
+            {canRemoveRow && (
+              <button type="button" class="chip" onClick={() => setExtraRows(extraRows - 1)}>
+                <Icon name="minus" size={16} /> Set
+              </button>
+            )}
+            {ex.unilateral && (
               <button type="button" class="chip" aria-pressed={p.separateSides} onClick={p.onToggleSides}>
                 <Icon name="sides" size={16} /> {p.separateSides ? 'Per side' : 'Both sides'}
               </button>

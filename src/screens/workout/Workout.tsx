@@ -6,6 +6,7 @@ import { currentExercise, discardSession, finishSession, setRest } from '../../f
 import { Button, Dialog, TopBar } from '../../ui/components';
 import { formatClock, useNow, useWakeLock } from '../../ui/hooks';
 import { RestBar } from './RestBar';
+import { SinceBar } from './SinceBar';
 import { SlotCard } from './SlotCard';
 import { SwapSheet } from './SwapSheet';
 
@@ -47,7 +48,7 @@ export function WorkoutScreen({ sessionId }: { sessionId: string }) {
   const progression = plan?.json.preferences?.progressionMethod !== 'none';
 
   async function onLogged(slot: number, restSec: number) {
-    if (settings.restTimerEnabled && restSec > 0) await setRest(session!.id, restSec);
+    if (settings.restCountdown && restSec > 0) await setRest(session!.id, restSec);
     // Move on when an exercise is complete.
     const sp = p.slots[slot]!;
     if (doneIn(slot) + 1 >= sp.sets) {
@@ -70,7 +71,7 @@ export function WorkoutScreen({ sessionId }: { sessionId: string }) {
 
   return (
     <main class="screen workout-screen">
-      <TopBar title={p.workoutName} onBack={back} right={<span class="num muted small">{formatClock((now - Date.parse(session.startedAt)) / 1000)}</span>} />
+      <TopBar title={p.workoutName} onBack={back} right={<span class="timer-pill num" aria-label="Workout duration">{formatClock((now - Date.parse(session.startedAt)) / 1000)}</span>} />
       <p class="muted small num" style={{ marginTop: '-12px' }}>{meta}</p>
 
       <div class="stack">
@@ -108,7 +109,11 @@ export function WorkoutScreen({ sessionId }: { sessionId: string }) {
         </Button>
       </div>
 
-      <RestBar session={session} now={now} sound={settings.sound} />
+      {settings.restCountdown && session.restEndsAt ? (
+        <RestBar session={session} now={now} sound={settings.sound} />
+      ) : (
+        <SinceBar session={session} sets={sets} now={now} unit={settings.weightUnit} />
+      )}
       <SwapSheet session={session} slot={swapSlot} unit={settings.weightUnit} onClose={() => setSwapSlot(null)} />
 
       <Dialog

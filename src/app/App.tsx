@@ -6,6 +6,7 @@ import { InstallScreen } from '../screens/onboarding/Install';
 import { ImportPreview } from '../screens/plans/ImportPreview';
 import { PlanDetail } from '../screens/plans/PlanDetail';
 import { ExerciseHistory, ProgressScreen, SessionDetail } from '../screens/progress/Progress';
+import { HabitsSettings } from '../screens/settings/HabitsSettings';
 import { SettingsScreen } from '../screens/settings/Settings';
 import { SummaryScreen } from '../screens/workout/Summary';
 import { WorkoutScreen } from '../screens/workout/Workout';
@@ -79,6 +80,9 @@ export function App() {
       break;
     case 'exercise':
       screen = <ExerciseHistory id={r.id} />;
+      break;
+    case 'habits':
+      screen = <HabitsSettings />;
       break;
     case 'device-check':
       screen = <DeviceCheck onBack={back} />;
