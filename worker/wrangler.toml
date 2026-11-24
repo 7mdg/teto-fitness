@@ -6,8 +6,7 @@ workers_dev = true
 [vars]
 ALLOWED_ORIGIN = "https://7mdg.github.io"
 
-# The KV namespace id is injected by .github/workflows/worker.yml from the
-# CF_KV_NAMESPACE_ID repository variable, so nothing account-specific lives here.
+# Namespace ids are not secret: they are useless without an account API token.
 [[kv_namespaces]]
 binding = "FEEDS"
-id = "__KV_NAMESPACE_ID__"
+id = "a5aae93ae45746dabe868cda04397067"

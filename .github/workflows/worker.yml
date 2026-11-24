@@ -12,8 +12,9 @@ permissions:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    # Skips cleanly until Cloudflare is set up (secrets/variables missing).
-    if: ${{ vars.CF_KV_NAMESPACE_ID != '' }}
+    # Skips cleanly until CI deploys are enabled (repo variable CF_WORKER_CI = true
+    # plus secrets CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID).
+    if: ${{ vars.CF_WORKER_CI == 'true' }}
     defaults:
       run:
         working-directory: worker
@@ -24,8 +25,6 @@ jobs:
           node-version: 22
       - run: npm install --no-audit --no-fund
       - run: npx tsc --noEmit
-      - name: Inject KV namespace id
-        run: sed -i "s/__KV_NAMESPACE_ID__/${{ vars.CF_KV_NAMESPACE_ID }}/" wrangler.toml
       - run: npx wrangler deploy
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
