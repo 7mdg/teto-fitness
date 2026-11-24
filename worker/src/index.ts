@@ -15,6 +15,8 @@ interface FeedRecord {
 }
 
 const MAX_ICS_BYTES = 256 * 1024;
+const EMPTY_REVOKED_ICS =
+  'BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//TETO//TETO Fitness//EN\r\nX-WR-CALNAME:TETO Fitness (link removed)\r\nEND:VCALENDAR\r\n';
 const ID_RE = /^[A-Za-z0-9_-]{22}$/;
 
 const b64url = (bytes: Uint8Array) =>
@@ -71,8 +73,10 @@ export default {
       if (!ID_RE.test(id)) return new Response('Not found', { status: 404 });
       const rec = await env.FEEDS.get<FeedRecord>(`feed:${id}`, 'json');
       if (!rec) return new Response('Not found', { status: 404 });
-      if (rec.revoked) return new Response('Gone', { status: 410 });
-      return new Response(req.method === 'HEAD' ? null : rec.ics, {
+      // iOS keeps the last copy when a feed errors (tested: 410 left events in place),
+      // so a revoked feed serves a valid, empty calendar: the next refresh removes every event.
+      const body = rec.revoked ? EMPTY_REVOKED_ICS : rec.ics;
+      return new Response(req.method === 'HEAD' ? null : body, {
         headers: {
           'Content-Type': 'text/calendar; charset=utf-8',
           'Cache-Control': 'no-cache',
@@ -113,7 +117,7 @@ export default {
       }
 
       if (req.method === 'DELETE') {
-        // Keep a tombstone for 90 days so subscribers get 410 Gone instead of a silent 404.
+        // Keep a tombstone for 90 days: subscribers receive an empty calendar (clearing their events), then 404.
         await env.FEEDS.put(`feed:${id}`, JSON.stringify({ ...auth, ics: '', revoked: true, updatedAt: new Date().toISOString() }), {
           expirationTtl: 90 * 24 * 3600,
         });

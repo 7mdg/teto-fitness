@@ -369,7 +369,9 @@ Your training history is preserved.
   - Set rows prefilled from the last session of the same `exerciseId`, from any plan. Values: weight · reps · ✓.
   - **One tap on ✓ logs a set exactly as prefilled.** Tapping a number opens the numeric keypad; ± steppers use the exercise's increment and 1 rep.
 - **Progression hint (lime):** `↑ 2 kg` when all working sets hit `repsMax` last time. The next weight is prefilled at +increment with the reps target at `repsMin`.
-- **Rest timer:** starts automatically on ✓. A sticky bottom bar shows the countdown with −15 / +15 / Skip. The screen is kept awake, and a sound plays when it ends if the app is open.
+- **Rest timer:** starts automatically on ✓. A sticky bottom bar shows the countdown with −15 / +15 / Skip. The screen is kept awake.
+  - **The end of rest is signalled visually first**, because the ringer is usually off and iOS web apps can't vibrate. The bar turns lime, shows "Rest done" and pulses gently (respecting reduced motion).
+  - Sound is optional. Phase 1 tests `navigator.audioSession.type = 'playback'` to play the beep through the silent switch. If that works on device, it's offered as a setting; if not, the timer stays visual only.
 - Row actions (⋯ on the exercise header): **swap** · add set · skip exercise · log sides separately (unilateral only) · note. Optional exercises are collapsed.
 - **Unilateral exercises:** by default one row means both sides at the same weight and reps (`side: both`). With per-side logging on, each set row splits into L and R reps; the weight is shared unless you edit one side. The choice is remembered per exercise.
 - **Finish:** a summary with duration, sets done and PRs (heaviest weight; best estimated 1RM by the Epley formula), plus an optional note. **Discard** asks for confirmation.
@@ -421,7 +423,7 @@ Plans (incl. start date, permanent swaps) · Plan generator · Exercises (increm
 1. Settings → Reminders → **Add to Calendar** → the app calls `POST /api/feeds` and gets back `{ id (128-bit random), writeToken }` → opens `webcal://teto-cal.<subdomain>.workers.dev/c/<id>.ics` → iOS asks "Subscribe?" → done.
 2. On any change to the plan, schedule, override or reminder setting, the app regenerates the calendar text and sends it with `PUT /api/feeds/<id>` (Bearer writeToken). If offline, it's queued and sent later.
 3. The Calendar app polls `GET /c/<id>.ics`.
-4. **Revoke / reset link:** `DELETE /api/feeds/<id>` makes the old link return `410 Gone` and stop updating. "Reset link" then creates a new feed and offers Subscribe again. Use it if the link was shared by accident.
+4. **Revoke / reset link:** `DELETE /api/feeds/<id>` disables writes, and the old link then serves an **empty calendar** for 90 days, so iOS removes every event on its next refresh. After that it returns 404. (Tested: a `410 Gone` made iOS keep its last copy, so an empty feed is used instead.) "Reset link" then creates a new feed and offers Subscribe again. Use it if the link was shared by accident.
 5. Remove entirely: revoke, plus a note to delete the subscription in the Calendar app.
 
 **Reminder times (Settings → Reminders)**
@@ -447,14 +449,14 @@ Plans (incl. start date, permanent swaps) · Plan generator · Exercises (increm
 
 **Backups and the feed link:** the feed id and write token **are included in the full backup**, so a restored phone keeps updating the same calendar instead of making you unsubscribe and resubscribe. This deliberately differs from the ChatGPT plan's "no secrets in backups" rule. The token can only rewrite your own workout calendar, and the backup lives in your iCloud Drive. Plan exports never include it.
 
-**To test on device (first spike):**
-- Does subscribing work from the Home Screen app?
-- The subscription's **Remove Alerts** switch must be off for alerts to ring.
-- How many `VALARM`s does iOS honour per event (2 expected)? If only 2, the app warns when more than 2 reminders are enabled.
-- How fast does a refresh show up, and does Settings → Calendar → Accounts → Fetch frequency apply to it?
-- Does a revoked link (410) clear the events, or leave the last copy?
+**Device results (phase 0, iPhone 16 Pro, iOS 27.2):**
+- Subscribing from the Home Screen app works.
+- **All 3 alerts per event were kept.** No limit warning is needed for 3 reminders.
+- A feed change shows immediately on a manual refresh in Calendar. The automatic refresh interval is iOS's choice, which is fine because the recurrence rules keep the feed correct without refreshes.
+- A revoked link answering 410 left the events in place, so revoke now serves an empty calendar instead. *Re-verify: refresh Calendar after revoking and confirm the events disappear.*
+- The one-time `.ics` file works through **Save to Files → open the file**. The fallback instructions say exactly that.
 
-**Done means:** the feature is only marked complete after these tests pass on your iPhone.
+**Done means:** the feature is only marked complete after the re-verification above and the phase 5 acceptance checks pass on your iPhone.
 
 **Fallback:** if subscribing fails in standalone mode, the button opens the same webcal link through Safari.
 
@@ -521,7 +523,7 @@ Plans (incl. start date, permanent swaps) · Plan generator · Exercises (increm
 
 | Phase | Deliverables | Verify |
 |---|---|---|
-| **0 · Spike (½ day)** | Minimal PWA on Pages + Worker + test feed | On your iPhone: install, offline, wake lock, file import, Share export, **calendar subscription + alerts** |
+| **0 · Spike ✅ done 24 Nov** | Minimal PWA on Pages + Worker + test feed | Passed on iPhone: install, offline, persistent storage (granted), data across restarts, wake lock, timestamp timer, file import, Share export, calendar subscription with 3 alerts, live feed update. Revoke changed to an empty feed (re-verify). |
 | **1 · Foundation** | Repo, CI deploy, design tokens and components, schema v1 + precompiled validator, Dexie schema, onboarding, plan import + preview | Unit tests; import both example plans |
 | **2 · Core training** | Scheduler + phases, Today, workout session, prefill, rest timer, progression, **exercise substitution + custom exercises**, unilateral logging, history | Run a full mock session on the phone, including two swaps |
 | **3 · Plan management** | Updates with change summaries, switching, archive/delete, schedule overrides, habits | Update-flow tests; history preserved |
