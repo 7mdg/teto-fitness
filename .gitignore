@@ -1,0 +1,17 @@
+node_modules/
+dist/
+dev-dist/
+.wrangler/
+worker/node_modules/
+*.local
+.claude/
+.env*
+.DS_Store
+Thumbs.db
+# personal data never goes in the repo
+GPT prompt.md
+PROPOSAL.md
+private/
+backups/
+*.backup.json
+teto-backup-*.json

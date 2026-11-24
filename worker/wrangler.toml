@@ -1,0 +1,13 @@
+name = "teto-cal"
+main = "src/index.ts"
+compatibility_date = "2026-11-01"
+workers_dev = true
+
+[vars]
+ALLOWED_ORIGIN = "https://7mdg.github.io"
+
+# The KV namespace id is injected by .github/workflows/worker.yml from the
+# CF_KV_NAMESPACE_ID repository variable, so nothing account-specific lives here.
+[[kv_namespaces]]
+binding = "FEEDS"
+id = "__KV_NAMESPACE_ID__"

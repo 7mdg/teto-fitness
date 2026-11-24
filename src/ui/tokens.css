@@ -1,0 +1,62 @@
+/* TETO "night" tokens — see SPEC.md §4 */
+:root {
+  color-scheme: dark;
+  --bg: #0D171D;
+  --panel: #111E25;
+  --panel-2: #16252D;
+  --chip: rgba(255, 255, 255, .06);
+  --chip-hover: rgba(255, 255, 255, .10);
+  --line: rgba(255, 255, 255, .08);
+  --ink: #E8EEEC;
+  --sub: #B9C8C9;
+  --mut: #8FA3A6;
+  --acc: #7FD6CB;
+  --lime: #A8D63A;
+  --danger: #FFB4A8;
+
+  --font: 'Instrument Sans', -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif;
+  --mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  --r-card: 16px;
+  --r-input: 10px;
+  --tap: 44px;
+
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--ink); }
+body {
+  font: 16px/1.45 var(--font);
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: none;
+}
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--acc); outline-offset: 2px; }
+
+.num { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+
+.btn {
+  min-height: var(--tap);
+  padding: 0 16px;
+  border: 0;
+  border-radius: 22px;
+  background: var(--chip);
+  color: var(--ink);
+  font-weight: 500;
+  font-size: 15px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.btn:active { background: var(--chip-hover); }
+.btn.primary { background: var(--acc); color: var(--bg); }
+.btn:disabled { opacity: .45; }
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}

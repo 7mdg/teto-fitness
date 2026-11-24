@@ -1,0 +1,42 @@
+.spike {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: calc(var(--safe-top) + 20px) 16px calc(var(--safe-bottom) + 32px);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.brand { display: flex; align-items: baseline; gap: 10px; }
+.brand b { font-weight: 600; letter-spacing: .32em; font-size: 14px; }
+.brand span { color: var(--mut); font-size: 14px; }
+.meta { margin: 0 0 6px; color: var(--mut); font-size: 12px; }
+
+.banner {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  background: var(--panel-2); border: 1px solid rgba(127, 214, 203, .35);
+  border-radius: var(--r-card); padding: 10px 10px 10px 16px;
+}
+
+.row {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--r-card);
+  padding: 14px 14px 12px;
+}
+.row header { display: flex; align-items: center; gap: 10px; }
+.row h2 { margin: 0; font-size: 15px; font-weight: 600; }
+.mark {
+  width: 22px; height: 22px; border-radius: 11px; flex: none;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 600; background: var(--chip); color: var(--mut);
+}
+.mark.pass { background: var(--lime); color: var(--bg); }
+.mark.fail { background: var(--danger); color: var(--bg); }
+.mark.info { background: rgba(127, 214, 203, .18); color: var(--acc); }
+.detail { margin: 8px 0 0; color: var(--sub); font-size: 14px; overflow-wrap: anywhere; }
+.help { margin: 6px 0 0; color: var(--mut); font-size: 13px; }
+.actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 12px; }
+.actions a { text-decoration: none; }
+.timer { font-size: 22px; min-width: 64px; color: var(--acc); }
+.report { margin-top: 8px; }
+.wide { width: 100%; }

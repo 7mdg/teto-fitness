@@ -1,0 +1,22 @@
+{
+  "name": "teto-fitness",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "preact": "10.26.9"
+  },
+  "devDependencies": {
+    "@preact/preset-vite": "2.10.1",
+    "typescript": "5.8.3",
+    "vite": "6.3.5",
+    "vite-plugin-pwa": "1.0.0",
+    "vitest": "3.2.4"
+  }
+}
